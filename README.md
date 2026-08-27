@@ -7,6 +7,7 @@ Antigravity IDE と各種 AI CLI（Codex / Claude Code）を適材適所で協�
 ```
 .
 ├── .agents/                      # AIエージェント設定（本ディレクトリ）
+│   ├── README.md                 # チーム構成・使い方ガイド
 │   ├── agents.md                 # 4ペルソナ定義 & CLI使い分け方針
 │   ├── skills/                   # 専門スキル群 (.md)
 │   │   ├── write_specs.md        # PM: 要件定義・仕様書作成 & 承認ゲート
@@ -33,6 +34,21 @@ Antigravity チャット欄で以下を実行：
 2. 内容を確認して「**承認**」と返答すると、**Engineer (@engineer)** が `src/` にコードを実装。
 3. **QA (@qa)** が `Claude Code CLI` を使ってコードを監査・修正。
 4. **DevOps (@devops)** がアプリケーションを起動し、URLを報告します。
+
+## 📦 他プロジェクトへの導入（Git Submodule で再利用）
+
+新しいプロジェクトで本エージェント設定を利用するには、プロジェクトのルートディレクトリで以下のコマンドを実行します：
+
+```bash
+# 1. 新規プロジェクトのルートでサブモジュールとして追加
+git submodule add https://github.com/naimasa/antigravity-agents.git .agents
+
+# 2. 必要な作業ディレクトリを作成
+mkdir -p docs src
+
+# 3. (任意) 最新のエージェント定義に更新したい場合
+git submodule update --remote
+```
 
 ## 🛠️ CLI 連携方針
 
