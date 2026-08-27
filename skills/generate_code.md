@@ -1,15 +1,17 @@
 # Skill: Generate Code
 
 ## Objective
-Full-Stack Engineer（@engineer）として、承認された `docs/spec.md` に基づき、`src/` ディレクトリ配下に完全な動作コードを生成する。
+Full-Stack Engineer（@engineer）として、承認された `docs/spec.md` に基づき、新規実装または既存コードのリファクタリングを行い、`src/` 配下に完全な動作コードを生成・更新する。
 
 ## Rules of Engagement
-- **Dynamic Coding**: 仕様書（`docs/spec.md`）で指定された言語・フレームワーク（Node.js / Python / React / Next.js / HTML+CSS+JS 等）に厳密に従う。
-- **出力先**: すべてのソースコードおよび設定ファイル（`package.json`, `requirements.txt`, `README.md` 等）を `src/`（またはプロジェクトルート）内に正確なフォルダ構造で配置する。
+- **Dynamic & Safe Coding**:
+  - 新規作成時: 仕様書で指定された言語・フレームワークに厳密に従い、完全なファイル群を生成する。
+  - リファクタリング時: 既存のコードベースとコーディングスタイルを尊重し、不要な全置換を避け、**対象箇所を安全に差分改修（In-place Refactoring）** する。既存の正常な機能やコメントを無闇に消去しない。
+- **出力先**: すべてのソースコードおよび設定ファイルを `src/`（またはプロジェクトルート）内に正確なフォルダ構造で配置する。
 - **CLI連携**:
-  - 高度なアルゴリズム導出・数学的計算ロジック・パフォーマンス最適化が必要な関数は **Codex CLI**（`echo "..." | codex exec --skip-git-repo-check --ephemeral -s danger-full-access`）を活用して生成する。
+  - 複雑なアルゴリズム導出・データ構造設計・パフォーマンスボトルネック関数の局所最適化は **Codex CLI**（`echo "..." | codex exec --skip-git-repo-check --ephemeral -s danger-full-access`）を活用する。
 
 ## Instructions
-1. `docs/spec.md` を精読し、アーキテクチャと要求仕様を把握する。
-2. ディレクトリ構造と必要なファイルをスキャフォールディングする。
-3. すべてのバックエンド・フロントエンドコード、設定ファイルを `src/` に完全に出力する（省略やプレースホルダーは禁止）。
+1. `docs/spec.md` を精読し、要求仕様と変更範囲（新規 or リファクタリング）を把握する。
+2. 既存コードがある場合は事前にコード構造を把握した上で、適切なファイルに修正・機能追加・リファクタリングを適用する。
+3. すべてのバックエンド・フロントエンドコード、設定ファイルを `src/` に完全に出力・更新する（省略やプレースホルダーは禁止）。
