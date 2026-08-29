@@ -17,3 +17,9 @@ DevOps Master（@devops）として、`docs/spec.md` で事前に検討・承認
    - 仕様書で定義された手順に沿ってデプロイを実行する（例: `gcloud run deploy`, `firebase deploy`, `docker compose up` 等）。
 4. **URL報告**:
    - デプロイ完了後、公開された本番 URL やアクセス情報をユーザーに報告する。
+
+## 作業記録（必須）
+- `track_progress.md` に従い、デプロイ後に `docs/runs/$RUN_ID/journal.md` へ `@devops` エントリを追記する。
+- 記録必須項目: デプロイ先プラットフォーム / 実行したデプロイコマンド / ビルド結果 / 公開 URL / リビジョン識別子（例: Cloud Run のリビジョン名）。
+- **シークレットは記録しない**: 環境変数名・参照先は記録してよいが、値（APIキー・トークン等）は journal / report に書かない。
+- デプロイ失敗時も `❌ Blocked` としてエラー要約を必ず記録する。
