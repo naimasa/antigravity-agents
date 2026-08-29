@@ -22,6 +22,7 @@ docs/runs/<RUN_ID>/raw/<NN>-<cli>-<persona>-<topic>.md   # CLI 生出力。NN �
 - **CLI 生出力を残す**: `codex exec -o docs/runs/$RUN_ID/raw/<NN>-...` / `claude -p ... | tee docs/runs/$RUN_ID/raw/<NN>-...`
 - **実測値**: Changed Files は `git diff --stat` の出力から転記する（記憶で書かない）。
 - **正直に**: 失敗・未完了・スキップも `❌ Blocked` / `⚠️ Warning` として残す。
+- **委譲理由**: `agents.md` のルーティング規約で CLI 指定のタスクを Antigravity が自前処理した場合、Findings に理由を必ず書く。
 - **秘匿情報**: 環境変数名は書いてよいが値（APIキー・トークン等）は書かない。
 
 ## Journal 書式
@@ -34,6 +35,7 @@ docs/runs/<RUN_ID>/raw/<NN>-<cli>-<persona>-<topic>.md   # CLI 生出力。NN �
 - **Actions**: 実施内容（箇条書き）
 - **Changed Files**: `path` (+N / -M) ／ なし
 - **CLI Calls**: `<cli>` — 目的 → [raw/NN-....md](raw/NN-....md) ／ なし
+- **Cost**: Claude=`total_cost_usd` 実測値 ／ Codex=呼出回数 ／ Gemini自前=件数
 - **Findings / Issues**: 検出した問題・残課題
 - **Next**: 次ペルソナへの申し送り
 ```

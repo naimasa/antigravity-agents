@@ -5,7 +5,7 @@
 ## Rules
 - **入力**: `docs/runs/$RUN_ID/journal.md`、`git diff --stat <起点コミット>..HEAD`
 - **捏造禁止**: journal と git の実測に無い成果・URL・テスト結果を書かない。未確認は「未検証」と明記する。
-- **手順**: `report.md` 生成 → `docs/runs/index.md` の表に**先頭行として**追記 → `git add docs/runs && git commit -m "docs(run): add report for <RUN_ID>"` → チャットに要約（Status 表 / 変更ファイル数 / URL / 残課題 / report へのリンク）を提示。
+- **手順**: `report.md` 生成 → `docs/runs/index.md` と `docs/runs/usage.md`（`manage_quota.md` 参照）の表に**先頭行として**追記 → `git add docs/runs && git commit -m "docs(run): add report for <RUN_ID>"` → チャットに要約（Status 表 / 変更ファイル数 / URL / 残課題 / report へのリンク）を提示。
 
 ## `docs/runs/<RUN_ID>/report.md`
 ```markdown
@@ -31,13 +31,21 @@
 |:---|:---|:---|
 （audit_code.md の検出表をそのまま転記。未対応分も含める）
 
-## 5. 稼働確認
+## 5. CLI 委譲サマリ
+| | Gemini自前 | Codex | Claude | 委譲率 |
+|:---|--:|--:|--:|--:|
+| 呼出数 | N | N | N | NN% |
+| 実測コスト | — | — | $N.NN | |
+
+委譲率が 50% 未満、または CLI 指定タスクの自前処理があれば理由をここに明記する。
+
+## 6. 稼働確認
 起動コマンド / URL / 動作確認結果（未実施なら「未検証」）。
 
-## 6. 残課題・次アクション
+## 7. 残課題・次アクション
 - [ ] …
 
-## 7. 参照
+## 8. 参照
 [journal.md](journal.md) ／ [raw/](raw/)
 ```
 

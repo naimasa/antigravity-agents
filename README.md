@@ -17,14 +17,18 @@ Antigravity IDE と各種 AI CLI（Codex / Claude Code）を適材適所で協�
 │   ├── deploy_app.md         # @devops: ローカル起動
 │   ├── deploy_production.md  # @devops: 本番/クラウドデプロイ
 │   ├── track_progress.md     # 共通: 作業結果の記録規約（唯一の情報源）
+│   ├── manage_quota.md       # 共通: CLI 消費量の記録とルーティング制御
 │   └── report_run.md         # 共通: サイクル最終レポート生成
-└── workflows/startcycle.md   # スラッシュコマンド `/startcycle` 定義
+├── workflows/startcycle.md   # スラッシュコマンド `/startcycle` 定義
+├── quota.example.yml         # ルーティングモード設定のテンプレート
+└── quota.local.yml           # (任意) 自分のプラン上限。gitignore 推奨
 
 docs/
 ├── spec.md                   # 生きた仕様書（最新の To-Be + 改訂履歴表）
 ├── specs/<RUN_ID>.md         # 承認時点の仕様スナップショット（不変）
 └── runs/
     ├── index.md              # 全開発サイクルの一覧ダッシュボード
+    ├── usage.md              # CLI 消費量の累積台帳（委譲率）
     └── <RUN_ID>/             # journal.md / report.md / raw/（CLI生出力）
 src/                          # アプリケーションソースコード
 ```
@@ -61,6 +65,29 @@ Antigravity のチャット欄で実行します。
 | Codex / Claude Code の生出力（判断根拠） | `docs/runs/<RUN_ID>/raw/` |
 | 承認された時点の仕様 / 現在の仕様 | `docs/specs/<RUN_ID>.md` / `docs/spec.md` |
 
+## ⚖️ Quota 配分と CLI 委譲
+
+Antigravity（Gemini）に作業が偏り Quota を使い切るのを防ぐため、**委譲を既定**にしています。
+
+> **残量（remaining quota）の自動照会は 3 サービスとも手段がありません。** Gemini は IDE の UI 表示のみ、Claude Code CLI に `usage` 系サブコマンドはなく、Codex CLI も同様です。したがって本設定は「消費量の実測記録」＋「ユーザーが宣言した上限に対する残量推定」＋「手動モード切替」で運用します。
+
+### ルーティング規約
+`agents.md` の表で CLI が指定された作業（コード生成 20 行超・アルゴリズム・レビュー・監査・アーキテクチャ設計など）を Antigravity が自前で処理した場合、**journal に理由を記録する義務**があります。無記録の自前実行は規約違反です。Antigravity 自身が担うのはファイル I/O・git・ビルド・テスト・ユーザー対話などの統括作業のみです。
+
+### モード切替
+```bash
+cp .agents/quota.example.yml .agents/quota.local.yml   # mode を編集
+```
+
+| mode | 用途 |
+|:---|:---|
+| `balanced`（既定） | 規約どおりに委譲 |
+| `gemini-saver` | Gemini 残量が少ない時。小さなコード生成・読解も CLI へ寄せる |
+| `local-only` | Codex/Claude が尽きた時。全て Antigravity で処理 |
+
+### 消費量の可視化
+Claude Code CLI は `--output-format json` で `total_cost_usd` を返すため実測でき、Codex は呼び出し回数、Gemini は「自前処理した件数」で計上します。Run ごとに `docs/runs/usage.md` へ追記され、**委譲率**（CLI 呼出 ÷ 全処理）が記録されます。`balanced` で 50% を下回り続ける場合、レポートに警告が出ます。
+
 ## 🗂 仕様書（spec.md）の履歴管理
 
 `docs/spec.md` は常に最新の To-Be を表すため上書き更新されますが、過去版を失わないよう 3 段構えで保全します。
@@ -90,10 +117,8 @@ git submodule add https://github.com/naimasa/antigravity-agents.git .agents
 mkdir -p docs/specs docs/runs src
 git rev-parse --git-dir || git init   # 履歴保全に必須
 git submodule update --remote         # 最新のエージェント定義へ更新
+
+cp .agents/quota.example.yml .agents/quota.local.yml   # (任意) ルーティングモード設定
+echo ".agents/quota.local.yml" >> .gitignore
 ```
 
-## 🛠 CLI 連携方針
-
-- **Codex CLI**: アルゴリズム導出・データ構造・単体関数最適化・数学的推論
-- **Claude Code CLI**: アーキテクチャレビュー・型安全性・セキュリティ監査・差分検証
-- **Antigravity**: パイプライン統括・ビルド・テスト・ローカル実行

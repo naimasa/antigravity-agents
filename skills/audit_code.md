@@ -6,7 +6,7 @@
 - **対象**: `src/` ／ **基準**: `docs/spec.md`
 - **デグレード防止を最優先**: 既存の要件・機能が壊れていないか、インターフェースの整合性が保たれているかを最重要視する。
 - **直接修正**: 修正が必要な箇所は `src/` 配下のファイルを直接修正する。
-- **CLI連携**: 横断的なセキュリティチェック・型整合性検査・リファクタリング前後の差分レビューには Claude Code CLI を使い、生出力を `docs/runs/$RUN_ID/raw/` へ保存する（`claude -p ... | tee ...`）。
+- **委譲（既定）**: 監査本体は **Claude Code CLI へ委譲する**（`claude -p --output-format json ... > docs/runs/$RUN_ID/raw/<NN>-claude-qa-<topic>.json`）。自前監査で済ませてはならない（`local-only` モード時を除く）。`total_cost_usd` を journal の Cost に記録する。
 - **記録**: `track_progress.md` に従い `@qa` エントリを追記 → `git add -A && git commit -m "fix(qa): <概要> (<RUN_ID>)"`。**検出項目は未対応分も含め全件**を下表で Findings に残す（黙って落とさない）。この表がそのまま `report_run.md` の QA セクションになる。
 
   | 検出項目 | 深刻度 (High/Med/Low) | 対応 (修正済み/未対応) | 備考 |
