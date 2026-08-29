@@ -1,9 +1,13 @@
 # 🤖 Antigravity Autonomous AI Developer Pipeline
 
+*[English README](README.en.md)*
+
 > **本ファイルは人間向けのガイドです。エージェントは読み込む必要はありません**（動作定義は `agents.md` / `skills/` / `workflows/` が唯一の情報源）。
 
 Antigravity IDE と各種 AI CLI（Codex / Claude Code）を適材適所で協調動作させる、自律型開発オーケストレーション設定です。
 **新規アプリケーションのゼロサム開発**から**既存システムのリファクタリング・機能追加**までシームレスに対応します。
+
+ペルソナ構成・`.agents/` のディレクトリ規約・`/startcycle` ワークフロー・承認ゲートは Google の Codelab をベースにしています（[謝辞](#-謝辞)）。本リポジトリはそこに、複数 CLI への委譲・Run 単位の成果集約・仕様書の履歴保全・消費量の記録を追加したものです。
 
 ## 📁 ディレクトリ構造
 
@@ -122,3 +126,8 @@ cp .agents/quota.example.yml .agents/quota.local.yml   # (任意) ルーティ�
 echo ".agents/quota.local.yml" >> .gitignore
 ```
 
+## 🙏 謝辞
+
+本リポジトリは Google Codelabs の **[Build Autonomous Developer Pipelines using agents.md and skills.md in Antigravity](https://codelabs.developers.google.com/autonomous-ai-developer-pipelines-antigravity)** をベースにしています。
+
+4 ペルソナ構成（@pm / @engineer / @qa / @devops）、`.agents/` のディレクトリ規約、`/startcycle` ワークフロー、そしてユーザーの承認ゲートは、いずれも同 Codelab に由来します。本リポジトリはこれに対し、Codex CLI / Claude Code CLI への委譲、Run 単位の成果集約、仕様書の履歴保全、消費量の記録、および submodule として再利用可能な形へのパッケージングを追加しています。
