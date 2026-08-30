@@ -21,6 +21,7 @@ The persona structure, the `.agents/` layout, the `/startcycle` workflow and the
 │   ├── deploy_production.md  # @devops: production / cloud deploy
 │   ├── track_progress.md     # shared: recording conventions (single source of truth)
 │   ├── manage_quota.md       # shared: usage accounting & routing control
+│   ├── verify_ui.md          # shared: browser verification policy (script it)
 │   └── report_run.md         # shared: end-of-cycle report generation
 ├── workflows/startcycle.md   # the `/startcycle` slash command
 ├── quota.example.yml         # routing mode template
@@ -93,6 +94,18 @@ cp .agents/quota.example.yml .agents/quota.local.yml   # then edit `mode`
 | `local-only` | Codex/Claude are exhausted — handle everything in Antigravity and note it in the report |
 
 Switching modes is a manual decision, because no API will tell you when you are running low.
+
+### Browser verification
+
+Verifying a web app by driving a browser interactively — screenshot, reason, act, repeat — is the fastest way to burn quota, because every step ships an image to the model and the whole sequence re-runs on each cycle.
+
+So the rule is: **capture it once as a spec, then run it without inference.**
+
+1. Write a Playwright spec (**generation is delegated to Codex**)
+2. Run it with `npx playwright test` — no model inference, so no tokens
+3. Send **only the failing cases**, with their logs and screenshots, to Claude Code for diagnosis
+
+Interactive browser use is allowed in exactly two cases: a single smoke check when no spec exists yet, and visual judgements that can't be automated. Either way the step count goes in the journal and is billed to "handled in-house" in the ledger. Anything you need to check twice gets turned into a spec first. See `skills/verify_ui.md`.
 
 ### Usage accounting
 
