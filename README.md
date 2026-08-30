@@ -22,6 +22,7 @@ Antigravity IDE と各種 AI CLI（Codex / Claude Code）を適材適所で協�
 │   ├── deploy_production.md  # @devops: 本番/クラウドデプロイ
 │   ├── track_progress.md     # 共通: 作業結果の記録規約（唯一の情報源）
 │   ├── manage_quota.md       # 共通: CLI 消費量の記録とルーティング制御
+│   ├── verify_ui.md          # 共通: ブラウザ動作確認の方針（spec 化）
 │   └── report_run.md         # 共通: サイクル最終レポート生成
 ├── workflows/startcycle.md   # スラッシュコマンド `/startcycle` 定義
 ├── quota.example.yml         # ルーティングモード設定のテンプレート
@@ -88,6 +89,17 @@ cp .agents/quota.example.yml .agents/quota.local.yml   # mode を編集
 | `balanced`（既定） | 規約どおりに委譲 |
 | `gemini-saver` | Gemini 残量が少ない時。小さなコード生成・読解も CLI へ寄せる |
 | `local-only` | Codex/Claude が尽きた時。全て Antigravity で処理 |
+
+### ブラウザでの動作確認
+Web アプリの動作確認を対話的なブラウザ操作（スクリーンショットを撮って判断して操作する繰り返し）で行うと、毎ステップ画像がモデルに渡るため Quota を最も速く消費します。しかもサイクルのたびに全ステップが再実行されます。
+
+そこで **一度 spec に落とし、以後は推論なしで回す**方針にしています。
+
+1. Playwright 等の spec を書く（**生成は Codex へ委譲**）
+2. `npx playwright test` で実行する（モデル推論を伴わないためトークンを消費しない）
+3. **失敗したケースだけ**、そのログとスクリーンショットを Claude Code に渡して原因分析させる
+
+対話的なブラウザ操作を使ってよいのは、spec が無い初回の疎通確認1回と、自動化困難な視覚判断のみです。使った場合は操作ステップ数を journal に記録し、消費台帳では「Gemini 自前処理」として計上します。同じ確認を2回以上行う場合は、必ず spec に落としてから実行します。詳細は `skills/verify_ui.md`。
 
 ### 消費量の可視化
 Claude Code CLI は `--output-format json` で `total_cost_usd` を返すため実測でき、Codex は呼び出し回数、Gemini は「自前処理した件数」で計上します。Run ごとに `docs/runs/usage.md` へ追記され、**委譲率**（CLI 呼出 ÷ 全処理）が記録されます。`balanced` で 50% を下回り続ける場合、レポートに警告が出ます。

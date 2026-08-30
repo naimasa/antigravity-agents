@@ -6,7 +6,7 @@ Gemini（Antigravity）に負荷が偏り Quota を使い切る問題を防ぐ�
 ## 各サービスから取得できるもの
 | サービス | 残量照会 | 実測できる消費量 |
 |:---|:---|:---|
-| Antigravity / Gemini | ✗（IDE の UI 表示のみ） | 自前処理したタスク数（委譲しなかった件数） |
+| Antigravity / Gemini | ✗（IDE の UI 表示のみ） | 自前処理したタスク数＋**対話的ブラウザ操作のステップ数**（スクリーンショットを伴うため単価が高い） |
 | Claude Code CLI | ✗（`usage` 系サブコマンドなし） | `--output-format json` の `total_cost_usd` / `usage` / `modelUsage` |
 | Codex CLI | ✗ | 呼び出し回数 |
 
@@ -34,9 +34,9 @@ limits:                 # ユーザーが自分のプランを見て手入力す
 ```markdown
 # Usage Ledger
 
-| Run ID | 日時 | mode | Gemini自前 | Codex呼出 | Claude呼出 | Claude実測USD | 委譲率 |
-|:---|:---|:---|--:|--:|--:|--:|--:|
-| <RUN_ID> | 2026-08-29 14:30 | balanced | 3 | 4 | 5 | 0.42 | 75% |
+| Run ID | 日時 | mode | Gemini自前 | ブラウザ操作 | Codex呼出 | Claude呼出 | Claude実測USD | 委譲率 |
+|:---|:---|:---|--:|--:|--:|--:|--:|--:|
+| <RUN_ID> | 2026-08-29 14:30 | balanced | 3 | 0 | 4 | 5 | 0.42 | 75% |
 ```
 **委譲率** = CLI 呼び出し数 ÷（CLI 呼び出し数 + Gemini 自前処理数）。
 `balanced` で継続的に 50% を下回る場合、委譲規約が守られていない兆候として report に警告を記載する。
