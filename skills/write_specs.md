@@ -9,7 +9,7 @@
   2. `git status --porcelain docs/spec.md` に変更があれば `git commit -m "docs(spec): save previous revision before <RUN_ID>"` で退避してから上書きする。
 - **承認時スナップショット**: 承認後 `mkdir -p docs/specs && cp docs/spec.md docs/specs/$RUN_ID.md` を実行し、`docs/spec.md` `docs/specs/$RUN_ID.md` `docs/runs/$RUN_ID` を `docs(spec): approve spec for <RUN_ID>` としてコミットする。
 - **Approval Gate**: 仕様書作成後は必ず停止し、承認（"Approved"）またはフィードバックを求める。チャットまたは `docs/spec.md` 内のコメントで修正指示が来たら改訂して再承認を求め、**往復のたびに上記の保全を実施する**（過程も履歴に残る）。
-- **既存システム**: 既存コードがあれば As-Is のアーキテクチャ・依存関係を分析し、To-Be との差分と破壊的変更の有無を明記する。
+- **既存システム**: 既存コードや外部移行元（WordPress等）があれば、As-Is のアーキテクチャ・依存関係・実データ（API/Sitemap等の抽出結果）を Antigravity が事前に収集して CLI へ渡し、To-Be との差分と破壊的変更の有無を明記する。
 - **記録**: `track_progress.md` に従う。停止前に `⏸ Awaiting Approval`、承認後に `✅ Done` を journal へ追記する。既存コードベースの構造把握・アーキテクチャ設計は **Claude Code CLI へ委譲する**（`agents.md` のルーティング規約）。生出力を `raw/` へ保存し、`total_cost_usd` を Cost に記録する。
 
 ## Instructions

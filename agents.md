@@ -29,7 +29,7 @@ Antigravity を司令塔に、専門 AI ペルソナと各種 CLI（Codex / Clau
 | CLI | コマンド形式 |
 |:---|:---|
 | **Codex** | `echo "<prompt>" \| codex exec -o <raw出力先> --skip-git-repo-check --ephemeral -s danger-full-access` |
-| **Claude Code** | `claude -p --output-format json --max-budget-usd 1.00 "<prompt>" > <raw出力先>` |
+| **Claude Code** | `claude -p --permission-mode bypassPermissions --model sonnet --output-format json --max-budget-usd 2.00 "<prompt>" < /dev/null > <raw出力先>` |
 
 ### ルーティングモード
 Step 0 で `.agents/quota.local.yml`（無ければ `balanced`）を読み、Run 全体に適用する。詳細は `skills/manage_quota.md`。
