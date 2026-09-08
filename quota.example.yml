@@ -2,6 +2,8 @@
 # 親プロジェクト側で `cp .agents/quota.example.yml .agents/quota.local.yml` し、
 # 自分のプランの上限を手入力する（各サービスとも残量の自動照会はできないため）。
 # quota.local.yml は .gitignore に追加することを推奨。
+# ※ CLI 実行中に利用制限（Usage Limit）に達した場合は、利用可能なモデルの選択肢を提示して
+# 続行するか解除待ちにするかをユーザーに確認します。
 
 mode: balanced          # balanced | gemini-saver | local-only
 

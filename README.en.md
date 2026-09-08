@@ -95,6 +95,13 @@ cp .agents/quota.example.yml .agents/quota.local.yml   # then edit `mode`
 
 Switching modes is a manual decision, because no API will tell you when you are running low.
 
+### Handling Usage Limits
+When Codex CLI or Claude Code CLI hits a usage limit (rate limit, quota exceeded, 429 error, insufficient balance, etc.), Antigravity will not silently fall back or proceed on its own. **It stops and presents available options to confirm how you want to proceed:**
+
+1. **Switch to alternative CLI / model**: If Codex hits a limit, switch to Claude Code; if Claude Code hits a limit, switch to Codex (or another configured model).
+2. **Handle directly via Antigravity (Gemini)**: Proceed by letting Antigravity handle the task directly in-house (and record the reason in the journal).
+3. **Wait for limit reset**: Pause the workflow and wait until the quota or rate limit resets before retrying.
+
 ### Browser verification
 
 Verifying a web app by driving a browser interactively — screenshot, reason, act, repeat — is the fastest way to burn quota, because every step ships an image to the model and the whole sequence re-runs on each cycle.

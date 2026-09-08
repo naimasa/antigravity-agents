@@ -90,6 +90,13 @@ cp .agents/quota.example.yml .agents/quota.local.yml   # mode を編集
 | `gemini-saver` | Gemini 残量が少ない時。小さなコード生成・読解も CLI へ寄せる |
 | `local-only` | Codex/Claude が尽きた時。全て Antigravity で処理 |
 
+### 利用制限（Usage Limit）発生時の確認フロー
+Codex または Claude Code の実行中に利用制限（Rate Limit / Quota Exceeded / 429 等）に到達した場合、Antigravity は独断で自前処理へ倒したり中断を強行せず、**必ずユーザーに以下の選択肢を提示して指示を仰ぎます**。
+
+1. **代替 CLI / モデルへの切り替え**: Codex 制限時は Claude Code、Claude Code 制限時は Codex（または利用可能な別モデル）に切り替えて続行。
+2. **Antigravity (Gemini) 自前処理**: CLI を使わず Antigravity が直接処理を肩代わりして続行（journal に理由を記録）。
+3. **利用制限の解除待ち**: 処理を一時停止し、制限がリセット・解除されるまで待機してから再試行。
+
 ### ブラウザでの動作確認
 Web アプリの動作確認を対話的なブラウザ操作（スクリーンショットを撮って判断して操作する繰り返し）で行うと、毎ステップ画像がモデルに渡るため Quota を最も速く消費します。しかもサイクルのたびに全ステップが再実行されます。
 

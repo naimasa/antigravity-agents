@@ -40,6 +40,19 @@ Step 0 で `.agents/quota.local.yml`（無ければ `balanced`）を読み、Run
 | `gemini-saver` | Gemini 残量が少ない時。上表に加え、20 行未満のコード生成・単一ファイルの読解も CLI へ寄せる。Antigravity はファイル I/O と統括のみ |
 | `local-only` | Codex/Claude の残量が尽きた時。全て Antigravity で処理し、report にその旨を明記 |
 
+### 利用制限（Usage Limit）発生時の対応規約
+
+Codex または Claude Code の実行時に利用制限（Rate Limit, Quota Exceeded, 429 エラー, 残高不足等）に到達した場合、**独断で自前処理へフォールバックしたり処理をスキップしてはならない**。
+必ず処理を一時停止し、ユーザーに利用可能な代替オプションを提示して「代替手段で続行するか」「利用制限の解除を待つか」を確認する。
+
+| 選択肢 | 内容 |
+|:---|:---|
+| **代替 CLI / モデルへ切り替え** | Codex 制限時は Claude Code、Claude Code 制限時は Codex（または利用可能な別モデル）で代替実行 |
+| **Antigravity (Gemini) 自前処理** | 当該タスク（または Run 全体）を Antigravity が直接処理して続行（journal に理由を記録） |
+| **利用制限の解除待ち** | 処理を一時停止し、利用制限がリセット・解除されるのを待ってから再開 |
+
+ユーザーの選択が得られるまで待機し、指示に従って再開する。詳細は `skills/manage_quota.md`。
+
 ## 共通原則
 
 1. **最小コンテキスト**: CLI へはファイル全体でなく該当関数・差分のみを渡す。

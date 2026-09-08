@@ -16,4 +16,5 @@ description: Start the Autonomous AI Developer Pipeline sequence with a new idea
 | 4 | @devops | `docs/spec.md` の Deployment 方針に従い `deploy_app.md`（ローカル）または `deploy_production.md`（本番）。Web アプリの動作確認は `verify_ui.md` | 起動/デプロイし URL と spec 実行結果を報告 |
 | 5 | — | `report_run.md` | `report.md` 生成 + `index.md` / `usage.md` 追記 → `docs(run): add report for <RUN_ID>` → **チャットに結果サマリを提示** |
 
-Step 1 の承認ゲートを省略・自動承認してはならない。
+- Step 1 の承認ゲートを省略・自動承認してはならない。
+- CLI 実行中に利用制限（Usage Limit / Rate Limit）に到達した場合は独断で処理を進めず、利用可能なモデルの選択肢を提示してユーザーに続行か待機かを確認する（`manage_quota.md` 参照）。

@@ -30,6 +30,29 @@ limits:                 # ユーザーが自分のプランを見て手入力す
 2. **各 CLI 呼び出し後**: journal の `Cost` 欄に実測値を記録する（`track_progress.md` の書式）。
 3. **Step 5**: `report_run.md` が Run 合計を集計し、`docs/runs/usage.md` に 1 行追記する。
 
+## 利用制限（Usage Limit / Rate Limit）到達時のハンドリング
+
+CLI の実行中に利用制限エラー（429 Too Many Requests、Rate limit exceeded、Quota/Credit exhausted 等）が発生した場合の処理手順：
+
+1. **エラー検知と一時停止**:
+   - CLI の終了コードやエラー出力を検知し、処理を直ちに一時停止する。
+   - 勝手に自前処理（Antigravity 直接実行）へフォールバックしたり、エラーを無視して次へ進んではならない。
+
+2. **ユーザーへの選択肢提示と確認**:
+   - チャット上でユーザーに対し、利用制限に達した CLI/サービス名とエラー内容を報告する。
+   - 以下の選択肢を提示し、**代替モデルで続行するか解除を待つか**の判断を仰ぐ：
+     - **選択肢 A（代替 CLI / モデルで続行）**:
+       - Codex が制限時: `Claude Code`（または利用可能な別モデル）に切り替えて実行。
+       - Claude Code が制限時: `Codex`（または利用可能な別モデル）に切り替えて実行。
+     - **選択肢 B（Antigravity / Gemini 自前処理で続行）**:
+       - 外部 CLI を使わず、Antigravity が直接コード生成/レビュー等を肩代わりして続行。
+     - **選択肢 C（利用制限の解除待ち）**:
+       - 処理を一時停止（Pause）したまま待機し、制限解除後にユーザーからの再開指示（「再開」「resume」等）を受けて同一 CLI で再試行。
+
+3. **記録**:
+   - `journal.md` に選択待ち状態（`⏸ Awaiting User Decision`）または確定した選択肢（フォールバック理由・変更先モデル）を記録する。
+   - `docs/runs/usage.md` および `report.md` にも、制限到達とフォールバックの経緯を明記する。
+
 ## `docs/runs/usage.md`（累積台帳 / 初回のみ作成）
 ```markdown
 # Usage Ledger
