@@ -10,7 +10,7 @@ Gemini（Antigravity）に負荷が偏り Quota を使い切る問題を防ぐ�
 | Claude Code CLI | ✗（`usage` 系サブコマンドなし） | `--output-format json` の `total_cost_usd` / `usage` / `modelUsage` |
 | Codex CLI | ✗ | 呼び出し回数 |
 
-Claude の実測例: `claude -p --output-format json ... > raw/NN-....json` の後
+Claude の実測例: `claude -p --model sonnet --output-format json ... > raw/NN-....json` の後
 `jq -r '.total_cost_usd, .usage.input_tokens, .usage.output_tokens' raw/NN-....json`
 
 ## `.agents/quota.local.yml`（任意 / 親プロジェクトで gitignore 推奨）
