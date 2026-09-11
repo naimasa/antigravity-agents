@@ -6,9 +6,9 @@ Antigravity を司令塔に、専門 AI ペルソナと各種 CLI（Codex / Clau
 
 | ペルソナ | Goal | 主な CLI |
 |:---|:---|:---|
-| **@pm** | Run を初期化し `RUN_ID` を採番。要望を分析し `docs/spec.md` を作成し、**ユーザーの明示的承認まで停止**する。修正指示があれば改訂して再承認を求める。コードは書かない。 | **Claude Code**（Sonnet / As-Is 構造把握・アーキテクチャ設計） |
+| **@pm** | Run を初期化し `RUN_ID` を採番。要望を分析し `docs/spec.md` を作成し、**ユーザーの明示的承認まで停止**する。修正指示があれば改訂して再承認を求める。コードは書かない。 | **Claude Code**（Sonnet 基本 / 複雑なアーキテクチャ設計は **Opus**） |
 | **@engineer** | 承認済み `docs/spec.md` に従い `src/` に実装。既存のコードとスタイルを尊重し、不要な全置換を避け差分改修する。 | **Codex**（コード生成・アルゴリズム・最適化） |
-| **@qa** | `src/` を監査し、依存欠落・構文/型エラー・脆弱性・ロジックバグ・**リファクタリングによるデグレード**を検出し直接修正する。 | **Claude Code**（Sonnet / レビュー・型検査・監査） |
+| **@qa** | `src/` を監査し、依存欠落・構文/型エラー・脆弱性・ロジックバグ・**リファクタリングによるデグレード**を検出し直接修正する。 | **Claude Code**（Sonnet 基本 / 複雑な不具合調査は **Opus**） |
 | **@devops** | 技術スタックを検出して依存インストール・起動/デプロイし、アクセス URL を報告する。 | —（Antigravity が直接実行） |
 
 ## ルーティング規約（必須）
@@ -21,15 +21,16 @@ Antigravity を司令塔に、専門 AI ペルソナと各種 CLI（Codex / Clau
 | ユーザーとの対話・承認ゲート・パイプライン統括・差分検証 | Antigravity（委譲しない） |
 | 20 行を超えるコード生成・新規モジュール実装 | **Codex** |
 | アルゴリズム導出・データ構造設計・性能最適化・数学的推論 | **Codex** |
-| コードレビュー・型整合性検査・セキュリティ監査・デグレード検証 | **Claude Code**（Sonnet） |
-| アーキテクチャ設計・モジュール分割の検討 | **Claude Code**（Sonnet） |
+| コードレビュー・型整合性検査・セキュリティ監査・デグレード検証 | **Claude Code**（Sonnet 基本 / 複雑な不具合調査は **Opus**） |
+| アーキテクチャ設計・モジュール分割の検討 | **Claude Code**（Sonnet 基本 / 複雑なアーキテクチャは **Opus**） |
 | 既存コードベースの構造把握・大量ファイルの読解要約 | **Claude Code**（Sonnet） |
 | Web アプリの動作確認 | **原則スクリプト化**（spec 生成は Codex、失敗解析は Claude Code）。対話的ブラウザ操作は例外。`skills/verify_ui.md` に従う |
 
 | CLI | コマンド形式 |
 |:---|:---|
 | **Codex** | `echo "<prompt>" \| codex exec -o <raw出力先> --skip-git-repo-check --ephemeral -s danger-full-access` |
-| **Claude Code** | `claude -p --permission-mode bypassPermissions --model sonnet --output-format json --max-budget-usd 2.00 "<prompt>" < /dev/null > <raw出力先>`（モデルは **Sonnet** を基本とする） |
+| **Claude Code (Sonnet)** | `claude -p --permission-mode bypassPermissions --model sonnet --output-format json --max-budget-usd 2.00 "<prompt>" < /dev/null > <raw出力先>`（基本モデル） |
+| **Claude Code (Opus)** | `claude -p --permission-mode bypassPermissions --model opus --output-format json --max-budget-usd 5.00 "<prompt>" < /dev/null > <raw出力先>`（複雑なアーキテクチャ設計・不具合調査時） |
 
 ### ルーティングモード
 Step 0 で `.agents/quota.local.yml`（無ければ `balanced`）を読み、Run 全体に適用する。詳細は `skills/manage_quota.md`。

@@ -79,7 +79,7 @@ Left to its own judgement, the orchestrator does nearly everything itself and bu
 
 ### Routing rules
 
-If the orchestrator handles work that `agents.md` assigns to a CLI — code generation over 20 lines, algorithm design, review, audit, architecture — **it must record why in the journal**. Doing so silently is a violation of the convention. Antigravity itself is limited to orchestration: file I/O, git, builds, tests and talking to you.
+If the orchestrator handles work that `agents.md` assigns to a CLI — code generation over 20 lines, algorithm design, review, audit, architecture — **it must record why in the journal**. Doing so silently is a violation of the convention. Antigravity itself is limited to orchestration: file I/O, git, builds, tests and talking to you. Claude Code uses **Sonnet** as its default model, and switches to **Opus** for complex architecture designs and in-depth bug/issue investigations.
 
 ### Modes
 
