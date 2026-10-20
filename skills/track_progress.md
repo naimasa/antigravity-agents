@@ -1,41 +1,25 @@
-# Skill: Track Progress（全ペルソナ共通・記録規約）
+# Skill: Track Progress（記録規約）
 
-各ペルソナの成果を 1 か所に集約し、「誰が・何を・どの CLI で・どのファイルに・どうなったか」を後から追える状態にする。**Run 中に一度読めば足りる。**
+「誰が・何を・どの CLI で・どうなったか」を後から追える状態にする。**手書きせず `scripts/` を使う。Run 中に一度読めば足りる。**
 
-## RUN_ID
-`/startcycle` の 1 実行 = 1 Run。`RUN_ID = $(date +%Y%m%d-%H%M%S)-<kebab-slug>`（slug は要望の英語要約 3〜5 語）。
-Step 0 で採番し、**全ペルソナが同一 RUN_ID を使う**（ペルソナ切替時に再採番しない）。
+## 使うスクリプト（親プロジェクトのルートで実行）
+| 目的 | コマンド |
+|:---|:---|
+| Run 開始（RUN_ID 採番・ディレクトリ・journal ヘッダ・STATE） | `.agents/scripts/run_init.sh <slug> "<要望原文>"` |
+| journal 追記 | `.agents/scripts/log.sh <persona> <Done\|Warning\|Blocked\|Awaiting> "<要約>" input=… actions=… cli=… cost=… findings=… next=…`（Changed Files は `git diff --stat` を自動転記） |
+| 再開用状態（上書き・20行以内） | `.agents/scripts/state.sh "<現在>" "<次の1手>" "<Blocker or なし>"` |
+| CLI 呼出（生出力保存・コスト記録・制限検知） | `.agents/scripts/cli.sh <codex\|claude-sonnet\|claude-opus> <brief.md> <persona-topic>` |
 
-## レイアウト（親プロジェクト側）
+## レイアウト
 ```
-docs/spec.md                    # 生きた仕様書（常に最新の To-Be）
-docs/specs/<RUN_ID>.md          # 承認時点のスナップショット（不変）
-docs/runs/index.md              # 全 Run 一覧
-docs/runs/<RUN_ID>/journal.md   # 逐次作業ログ（追記のみ）
-docs/runs/<RUN_ID>/report.md    # 最終レポート（report_run.md が生成）
-docs/runs/<RUN_ID>/raw/<NN>-<cli>-<persona>-<topic>.md   # CLI 生出力。NN は Run 内通番
+docs/spec.md  docs/specs/<RUN_ID>.md  docs/ARCHITECTURE.md  docs/verify.json
+docs/runs/index.md  docs/runs/usage.md  docs/runs/.current
+docs/runs/<RUN_ID>/{journal.md,STATE.md,report.md,usage.tsv,APPROVED,briefs/,raw/,verify/}
 ```
 
 ## Rules
-- **追記のみ**: 既存エントリを書き換えない。訂正は新エントリで行う。
-- **即時記録**: 各ステップ完了直後に書く（末尾一括は禁止。中断時に記録が残らないため）。
-- **CLI 生出力を残す**: `codex exec -o docs/runs/$RUN_ID/raw/<NN>-...` / `claude -p ... | tee docs/runs/$RUN_ID/raw/<NN>-...`
-- **実測値**: Changed Files は `git diff --stat` の出力から転記する（記憶で書かない）。
-- **正直に**: 失敗・未完了・スキップも `❌ Blocked` / `⚠️ Warning` として残す。
-- **委譲理由**: `agents.md` のルーティング規約で CLI 指定のタスクを Antigravity が自前処理した場合、Findings に理由を必ず書く。
-- **秘匿情報**: 環境変数名は書いてよいが値（APIキー・トークン等）は書かない。
-
-## Journal 書式
-冒頭ヘッダに Run ID / 開始時刻 / ユーザー要望の原文 / 起点コミット（`git rev-parse --short HEAD`）。以降この形式で追記する。
-
-```markdown
-## [YYYY-MM-DD HH:MM:SS] @<persona> — <一行要約>
-- **Status**: ✅ Done / ⚠️ Warning / ❌ Blocked / ⏸ Awaiting Approval
-- **Input**: 参照した仕様・指示
-- **Actions**: 実施内容（箇条書き）
-- **Changed Files**: `path` (+N / -M) ／ なし
-- **CLI Calls**: `<cli>` — 目的 → [raw/NN-....md](raw/NN-....md) ／ なし
-- **Cost**: Claude=`total_cost_usd` 実測値 ／ Codex=呼出回数 ／ Gemini自前=件数
-- **Findings / Issues**: 検出した問題・残課題
-- **Next**: 次ペルソナへの申し送り
-```
+- **追記のみ**（journal）。訂正は新エントリで。STATE.md は上書き。
+- **即時記録**: 各ステップ完了直後。中断しても残る。
+- **正直に**: 失敗・未完了・スキップも `Blocked` / `Warning` で残す。未検証は「未検証」と書く。
+- **委譲理由**: CLI 指定のタスクを自前処理したら `findings=` に理由を書く。
+- **秘匿情報**: 環境変数名は可、値（キー・トークン）は書かない。

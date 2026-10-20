@@ -24,17 +24,24 @@ Antigravity IDE と各種 AI CLI（Codex / Claude Code）を適材適所で協�
 │   ├── manage_quota.md       # 共通: CLI 消費量の記録とルーティング制御
 │   ├── verify_ui.md          # 共通: ブラウザ動作確認の方針（spec 化）
 │   └── report_run.md         # 共通: サイクル最終レポート生成
+├── scripts/                  # 定型作業の決定論的スクリプト（LLM 推論を使わない）
+│   ├── run_init.sh  log.sh  state.sh   # 採番・journal・再開用 STATE
+│   ├── cli.sh                          # Codex/Claude 呼出の唯一の入口（権限・生出力・コスト・制限検知）
+│   ├── verify.sh                       # lint/型/テスト/E2E の機械的な合否判定
+│   └── report.sh                       # 実測集計・usage 台帳追記
 ├── workflows/startcycle.md   # スラッシュコマンド `/startcycle` 定義
 ├── quota.example.yml         # ルーティングモード設定のテンプレート
 └── quota.local.yml           # (任意) 自分のプラン上限。gitignore 推奨
 
 docs/
+├── ARCHITECTURE.md           # 全 CLI が最初に読む地図（100 行以内・差分更新）
+├── verify.json               # verify.sh の実行ステップ（`verify.sh --detect` で雛形生成）
 ├── spec.md                   # 生きた仕様書（最新の To-Be + 改訂履歴表）
 ├── specs/<RUN_ID>.md         # 承認時点の仕様スナップショット（不変）
 └── runs/
     ├── index.md              # 全開発サイクルの一覧ダッシュボード
     ├── usage.md              # CLI 消費量の累積台帳（委譲率）
-    └── <RUN_ID>/             # journal.md / report.md / raw/（CLI生出力）
+    └── <RUN_ID>/             # journal.md / STATE.md / report.md / briefs/ / raw/ / verify/
 src/                          # アプリケーションソースコード
 ```
 
@@ -70,6 +77,21 @@ Antigravity のチャット欄で実行します。
 | Codex / Claude Code の生出力（判断根拠） | `docs/runs/<RUN_ID>/raw/` |
 | 承認された時点の仕様 / 現在の仕様 | `docs/specs/<RUN_ID>.md` / `docs/spec.md` |
 
+## ✅ 品質ゲートとトークン最適化の仕組み
+
+| 仕組み | 内容 |
+|:---|:---|
+| **受入基準 (AC)** | spec に Given/When/Then の AC と検証手段を必須化。承認ゲートで AC も確認 |
+| **機械的な完了判定** | `scripts/verify.sh` が lint・型・テスト・E2E を実行（推論なし）。完了の定義はこれが通ること |
+| **修正ループ** | @engineer は失敗ログ末尾だけを使い最大 3 回修正。超えたら Opus 分析かユーザー確認 |
+| **テスト分離** | AC に対応するテストは実装を見せず別呼出で生成（実装の追認を防ぐ） |
+| **brief 方式** | CLI にはコード断片でなく `briefs/NN.md`（AC・触るファイル・完了条件）を渡す。必要範囲は CLI が自分で読む |
+| **ARCHITECTURE.md** | 全体探索のキャッシュ。毎回の再探索を省く |
+| **スクリプト化** | 採番・journal・コスト集計・CLI 呼出をシェルで決定論的に実行。LLM は文章部分のみ |
+| **要約のみ読む** | `cli.sh` は結果本文のパスと先頭数行だけ返す。生出力は `raw/` に保存し必要時のみ開く |
+| **権限の絞り込み** | 既定は Codex `workspace-write`、Claude `acceptEdits`＋許可ツール明示＋`--max-turns`。広げるのは明示時のみ（`CODEX_SANDBOX` / `CLAUDE_TOOLS`） |
+| **再開** | `/startcycle resume` は `STATE.md`（20 行以内）だけ読んで続行 |
+
 ## ⚖️ Quota 配分と CLI 委譲
 
 Antigravity（Gemini）に作業が偏り Quota を使い切るのを防ぐため、**委譲を既定**にしています。
@@ -77,7 +99,7 @@ Antigravity（Gemini）に作業が偏り Quota を使い切るのを防ぐた�
 > **残量（remaining quota）の自動照会は 3 サービスとも手段がありません。** Gemini は IDE の UI 表示のみ、Claude Code CLI に `usage` 系サブコマンドはなく、Codex CLI も同様です。したがって本設定は「消費量の実測記録」＋「ユーザーが宣言した上限に対する残量推定」＋「手動モード切替」で運用します。
 
 ### ルーティング規約
-`agents.md` の表で CLI が指定された作業（コード生成 20 行超・アルゴリズム・レビュー・監査・アーキテクチャ設計など）を Antigravity が自前で処理した場合、**journal に理由を記録する義務**があります。無記録の自前実行は規約違反です。Antigravity 自身が担うのはファイル I/O・git・ビルド・テスト・ユーザー対話などの統括作業のみです。Claude Code は **Sonnet** を基本モデルとし、複雑なアーキテクチャ設計や難度の高い不具合調査・デグレード深層追跡には **Opus** を使用します。
+`agents.md` の表で CLI が指定された作業（複数ファイルの実装・アルゴリズム・レビュー・監査・アーキテクチャ設計など。単一ファイルの小編集は自前でよい）を Antigravity が自前で処理した場合、**journal に理由を記録する義務**があります。無記録の自前実行は規約違反です。Antigravity 自身が担うのはファイル I/O・git・ビルド・テスト・ユーザー対話などの統括作業のみです。Claude Code は **Sonnet** を基本モデルとし、複雑なアーキテクチャ設計や難度の高い不具合調査・デグレード深層追跡には **Opus** を使用します。
 
 ### モード切替
 ```bash
@@ -109,7 +131,7 @@ Web アプリの動作確認を対話的なブラウザ操作（スクリーン�
 対話的なブラウザ操作を使ってよいのは、spec が無い初回の疎通確認1回と、自動化困難な視覚判断のみです。使った場合は操作ステップ数を journal に記録し、消費台帳では「Gemini 自前処理」として計上します。同じ確認を2回以上行う場合は、必ず spec に落としてから実行します。詳細は `skills/verify_ui.md`。
 
 ### 消費量の可視化
-Claude Code CLI は `--output-format json` で `total_cost_usd` を返すため実測でき、Codex は呼び出し回数、Gemini は「自前処理した件数」で計上します。Run ごとに `docs/runs/usage.md` へ追記され、**委譲率**（CLI 呼出 ÷ 全処理）が記録されます。`balanced` で 50% を下回り続ける場合、レポートに警告が出ます。
+`cli.sh` が `--output-format json` の `total_cost_usd` と tokens を Run ごとの `usage.tsv` に記録し、Codex は呼び出し回数、Gemini は「自前処理した件数」で計上します。`report.sh` が `docs/runs/usage.md` へ追記され、**委譲率**（CLI 呼出 ÷ 全処理）が記録されます。`balanced` で 50% を下回り続ける場合、レポートに警告が出ます。
 
 ## 🗂 仕様書（spec.md）の履歴管理
 

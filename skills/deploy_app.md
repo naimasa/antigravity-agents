@@ -4,7 +4,7 @@
 
 ## Rules
 - **非同期実行**: サーバー起動コマンド（`npm run dev`, `python3 app.py`, `serve` 等）はバックグラウンドで起動する。
-- **記録**: `track_progress.md` に従い `@devops` エントリを追記。検出スタック / install・起動コマンド / ポート / URL / 起動ログ要点を残す。起動失敗時も `❌ Blocked` としてエラー要約を必ず記録し、動作確認未実施なら「未検証」と明記する。
+- **記録**: `log.sh devops …` で記録。検出スタック / install・起動コマンド / ポート / URL / 起動ログ要点を残す。起動失敗時も `❌ Blocked` としてエラー要約を必ず記録し、動作確認未実施なら「未検証」と明記する。
 
 ## Instructions
 1. **スタック検出**: `package.json` / `requirements.txt` / `index.html` 等からランタイムを判定する。

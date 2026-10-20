@@ -1,20 +1,19 @@
 # Skill: Audit Code（@qa）
 
-`src/` のコードを監査し、依存関係の欠落・構文エラー・未処理エラー・セキュリティ脆弱性・ロジックバグ、および**リファクタリングによる既存機能のデグレード**を検出・修正する。
+`verify.sh` の機械検査では拾えない欠陥（**デグレード**、spec/AC からの逸脱、設計・インターフェース不整合、セキュリティ、未処理エラー）を判定・修正する。
 
 ## Rules
-- **対象**: `src/` ／ **基準**: `docs/spec.md`
-- **範囲**: 本スキルは静的な監査を扱う。ブラウザ上での動作確認は `verify_ui.md` に従う。
-- **デグレード防止を最優先**: 既存の要件・機能が壊れていないか、インターフェースの整合性が保たれているかを最重要視する。
-- **直接修正**: 修正が必要な箇所は `src/` 配下のファイルを直接修正する。
-- **委譲（既定）**: 監査本体は **Claude Code CLI へ委譲する**（`claude -p --permission-mode bypassPermissions --model sonnet --output-format json --max-budget-usd 2.00 "<prompt>" < /dev/null > docs/runs/$RUN_ID/raw/<NN>-claude-qa-<topic>.json`、モデルは **Sonnet** を基本とする。ただし複雑な不具合調査・深層原因追跡には **Opus**（`--model opus` / `--max-budget-usd 5.00`）を使用する）。自前監査で済ませてはならない（`local-only` モード時を除く）。`total_cost_usd` を journal の Cost に記録する。
-- **利用制限のハンドリング**: Claude Code CLI 実行時に利用制限（Usage Limit / Rate Limit / 429 / 残高不足等）が発生した場合は勝手に自前処理へ倒さず、`manage_quota.md` に従って利用可能なモデルオプション（Codex、Antigravity 自前処理、制限解除待ち）を提示してユーザーに確認する。
-- **記録**: `track_progress.md` に従い `@qa` エントリを追記 → `git add -A && git commit -m "fix(qa): <概要> (<RUN_ID>)"`。**検出項目は未対応分も含め全件**を下表で Findings に残す（黙って落とさない）。この表がそのまま `report_run.md` の QA セクションになる。
+- **前提**: @engineer の `verify.sh` が通っていること。構文・型・lint・既存テストの再点検は LLM にやらせない（`verify.sh` の責務）。
+- **対象**: `git diff <起点コミット>..HEAD` の変更範囲と、その影響先。基準は `docs/spec.md` の AC。
+- **デグレード防止を最優先**: 既存要件・公開インターフェースが保たれているか。
+- **委譲（既定）**: 監査は Claude Code へ。`cli.sh claude-sonnet <brief> qa-<topic>`（複雑な不具合調査・深層原因は `claude-opus`）。`local-only` を除き自前監査で済ませない。
+- **brief**: 起点コミット、変更ファイルの一覧、見るべき AC、**出力形式**（下表の JSON 配列を `docs/runs/$RUN_ID/raw/` 配下に保存する、または最終メッセージを表形式にする）を指定。diff 全文は貼らず、`git diff` を自分で見るよう指示する。
+- **直接修正**: 必要な修正は `src/` に直接反映し、**修正後に `verify.sh` を再実行して通過を確認**する。
+- **利用制限**: 終了コード 75 は停止し `manage_quota.md` に従う。
 
-  | 検出項目 | 深刻度 (High/Med/Low) | 対応 (修正済み/未対応) | 備考 |
-  |:---|:---|:---|:---|
+## 検出表（未対応分も全件。そのまま report の QA セクションになる）
+| 検出項目 | 深刻度 (High/Med/Low) | 対応 (修正済み/未対応) | 備考 |
+|:---|:---|:---|:---|
 
-## Instructions
-1. `docs/spec.md` と `src/` の実装・差分を比較検証する。
-2. 構文エラー・インポート漏れ・型不整合・セキュリティホール・デグレードを検出する。
-3. 修正し、クリーンなコードを `src/` に反映する。
+## 記録
+`log.sh qa … findings="<検出表 or raw へのパス>"` → `state.sh` → `git add -A && git commit -m "fix(qa): <概要> (<RUN_ID>)"`。

@@ -23,6 +23,7 @@ The persona structure, the `.agents/` layout, the `/startcycle` workflow and the
 │   ├── manage_quota.md       # shared: usage accounting & routing control
 │   ├── verify_ui.md          # shared: browser verification policy (script it)
 │   └── report_run.md         # shared: end-of-cycle report generation
+├── scripts/                  # deterministic helpers: run_init / log / state / cli / verify / report
 ├── workflows/startcycle.md   # the `/startcycle` slash command
 ├── quota.example.yml         # routing mode template
 └── quota.local.yml           # (optional) your own plan limits. gitignore this
@@ -71,6 +72,18 @@ One `/startcycle` invocation is one **Run** (`RUN_ID = YYYYMMDD-HHMMSS-<slug>`).
 | Raw Codex / Claude Code output (the reasoning behind a decision) | `docs/runs/<RUN_ID>/raw/` |
 | The spec as approved / the spec as it stands now | `docs/specs/<RUN_ID>.md` / `docs/spec.md` |
 
+## ✅ Quality gates and token optimisation
+
+- **Acceptance criteria**: every spec carries Given/When/Then ACs with a verification method; you approve them at the gate.
+- **Mechanical definition of done**: `scripts/verify.sh` runs lint / types / tests / E2E (steps in `docs/verify.json`, bootstrap with `verify.sh --detect`) with no model inference.
+- **Bounded fix loop**: @engineer feeds only the tail of failing logs back, max 3 rounds, then escalates to Opus analysis or asks you.
+- **Independent tests**: tests for each AC are generated in a separate call that never sees the implementation.
+- **Brief files**: CLIs get `docs/runs/<RUN_ID>/briefs/NN.md` (ACs, files to touch, done criteria) instead of pasted snippets, and read what they need themselves.
+- **`docs/ARCHITECTURE.md`**: a ≤100-line repo map every CLI reads first, replacing repeated exploration.
+- **Scripts over prose**: run ID, journal, CLI invocation (`cli.sh`: flags, raw output, cost, usage-limit detection → exit 75) and reporting (`report.sh`) are deterministic shell. Only summaries are read back; raw output stays in `raw/`.
+- **Tighter permissions by default**: Codex `workspace-write`; Claude `acceptEdits` with an explicit tool allow-list and `--max-turns`. Widen only deliberately (`CODEX_SANDBOX`, `CLAUDE_TOOLS`).
+- **Resume**: `/startcycle resume` reads only the ≤20-line `STATE.md`.
+
 ## ⚖️ Spreading the load across providers
 
 Left to its own judgement, the orchestrator does nearly everything itself and burns through the Gemini quota while the other subscriptions sit idle. So **delegation is the default**, not an option.
@@ -79,7 +92,7 @@ Left to its own judgement, the orchestrator does nearly everything itself and bu
 
 ### Routing rules
 
-If the orchestrator handles work that `agents.md` assigns to a CLI — code generation over 20 lines, algorithm design, review, audit, architecture — **it must record why in the journal**. Doing so silently is a violation of the convention. Antigravity itself is limited to orchestration: file I/O, git, builds, tests and talking to you. Claude Code uses **Sonnet** as its default model, and switches to **Opus** for complex architecture designs and in-depth bug/issue investigations.
+If the orchestrator handles work that `agents.md` assigns to a CLI — multi-file implementation, algorithm design, review, audit, architecture — **it must record why in the journal**. Doing so silently is a violation of the convention. Antigravity itself is limited to orchestration: file I/O, git, builds, tests and talking to you. Claude Code uses **Sonnet** as its default model, and switches to **Opus** for complex architecture designs and in-depth bug/issue investigations.
 
 ### Modes
 
