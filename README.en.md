@@ -170,17 +170,42 @@ Because each gate commits separately, history separates whose work a change came
 
 `evals/` holds two small tasks (greenfield and refactor) with hidden acceptance checks. `run_eval.sh` runs them, `results.tsv` records pass rate, fix-loop rounds, CLI calls, USD and tokens, and `compare.sh` averages per harness version. See `evals/README.md`.
 
-## 📦 Using it in another project (Git submodule)
+## 📦 Using it in another project
 
+`install.sh` sets up the Claude Code links (`.claude/skills/`), the managed `AGENTS.md` block, `docs/` and `.gitignore`. Pick one of two patterns depending on whether those should show up in git.
+
+### Pattern A: team-shared (Git submodule, commit the generated files)
 ```bash
+git rev-parse --git-dir || git init                  # required for history preservation
 git submodule add https://github.com/naimasa/antigravity-agents.git .agents
-git rev-parse --git-dir || git init   # required for history preservation
-.agents/scripts/install.sh            # Claude Code links, AGENTS.md block, docs/, .gitignore (idempotent)
-.agents/scripts/verify.sh --detect    # bootstrap docs/verify.json (review it)
-git submodule update --remote         # update definitions (re-run install.sh afterwards)
+.agents/scripts/install.sh                           # .claude/skills, AGENTS.md, .gitignore (idempotent)
+.agents/scripts/verify.sh --detect                   # bootstrap docs/verify.json (review it)
+git add .gitmodules .agents .claude AGENTS.md .gitignore docs
+git commit -m "chore: add antigravity-agents harness"
 
-cp .agents/quota.example.yml .agents/quota.local.yml   # optional: routing mode
+cp .agents/quota.example.yml .agents/quota.local.yml # optional; already gitignored
+
+# updating
+git submodule update --remote && .agents/scripts/install.sh
 ```
+
+### Pattern B: personal use (nothing shows in `git status`)
+Clone into `.agents` and run `install.sh --local`, which registers the generated files in `.git/info/exclude` (local-only ignore rules).
+```bash
+git rev-parse --git-dir || git init
+git clone https://github.com/naimasa/antigravity-agents.git .agents
+.agents/scripts/install.sh --local                   # excludes .agents/, .claude/skills, AGENTS.md
+.agents/scripts/verify.sh --detect                   # bootstrap docs/verify.json (review it)
+git status --short                                   # → none of the above appear
+
+cp .agents/quota.example.yml .agents/quota.local.yml # optional
+
+# updating
+git -C .agents pull && .agents/scripts/install.sh --local
+```
+- If a tracked `AGENTS.md` already exists, `--local` leaves it untouched and prints the block to add by hand (skills are still discovered from `.agents/skills`).
+- Development artifacts (`docs/spec.md`, `docs/runs/`) still appear in diffs as normal project records; only the harness files are excluded.
+- To switch to sharing later, delete the matching lines from `.git/info/exclude` and follow Pattern A.
 
 ## 🙏 Credits
 
