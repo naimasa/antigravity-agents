@@ -1,3 +1,7 @@
+---
+name: deploy-production
+description: /startcycle の Step 4（@devops）で本番/クラウドへデプロイする際に使う。docs/spec.md の Deployment 方針に従う。
+---
 # Skill: Deploy Production / Cloud（@devops）
 
 `docs/spec.md` の「Deployment & Hosting Strategy」で承認された方針に従い、`src/` を本番環境へデプロイする。
@@ -5,7 +9,7 @@
 ## Rules
 - **仕様準拠**: 指定されたデプロイ先（Cloud Run / Firebase Hosting / Vercel / AWS / Docker 等）と手順に厳密に従う。
 - **使用ツール**: 導入済み CLI（`gcloud`, `firebase`, `vercel`, `docker` 等）や関連 MCP ツールを仕様に応じて選択する。
-- **記録**: `track_progress.md` に従い `@devops` エントリを追記。プラットフォーム / デプロイコマンド / ビルド結果 / 公開 URL / リビジョン識別子を残す。**シークレットの値は記録しない**（変数名・参照先のみ可）。失敗時も `❌ Blocked` としてエラー要約を必ず記録する。
+- **記録**: `log.sh devops …` で記録。プラットフォーム / デプロイコマンド / ビルド結果 / 公開 URL / リビジョン識別子を残す。**シークレットの値は記録しない**（変数名・参照先のみ可）。失敗時も `❌ Blocked` としてエラー要約を必ず記録する。
 
 ## Instructions
 1. **要件読取**: `docs/spec.md` からデプロイ先・必要な環境変数・ビルド/デプロイ手順を確認する。

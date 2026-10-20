@@ -2,7 +2,7 @@
 
 *[日本語版 README](README.md)*
 
-> **This file is a guide for humans. Agents do not need to read it** — the behavioural definitions live in `agents.md`, `skills/` and `workflows/`, which are the single source of truth.
+> **This file is a guide for humans. Agents do not need to read it** — the behavioural definitions live in `agents.md` and `skills/`, which are the single source of truth.
 
 An orchestration config that puts Antigravity in charge of a development pipeline and delegates the heavy lifting to Codex CLI and Claude Code CLI, each on the work it is best at. It covers greenfield builds as well as refactoring and feature work on an existing codebase.
 
@@ -14,16 +14,18 @@ The persona structure, the `.agents/` layout, the `/startcycle` workflow and the
 .agents/                      # this repository (agent configuration)
 ├── agents.md                 # persona definitions & routing rules (always loaded)
 ├── skills/
-│   ├── write_specs.md        # @pm: requirements, approval gate, spec history
-│   ├── generate_code.md      # @engineer: implementation & in-place refactoring (Codex)
-│   ├── audit_code.md         # @qa: audit & regression prevention (Claude Code)
-│   ├── deploy_app.md         # @devops: local run
-│   ├── deploy_production.md  # @devops: production / cloud deploy
-│   ├── track_progress.md     # shared: recording conventions (single source of truth)
-│   ├── manage_quota.md       # shared: usage accounting & routing control
-│   ├── verify_ui.md          # shared: browser verification policy (script it)
-│   └── report_run.md         # shared: end-of-cycle report generation
-├── workflows/startcycle.md   # the `/startcycle` slash command
+│   ├── startcycle         # the `/startcycle` entry point (orchestration)
+│   ├── write-specs        # @pm: requirements, approval gate, spec history
+│   ├── generate-code      # @engineer: implementation & in-place refactoring (Codex)
+│   ├── audit-code         # @qa: audit & regression prevention (Claude Code)
+│   ├── deploy-app         # @devops: local run
+│   ├── deploy-production  # @devops: production / cloud deploy
+│   ├── track-progress     # shared: recording conventions (single source of truth)
+│   ├── manage-quota       # shared: usage accounting & routing control
+│   ├── verify-ui          # shared: browser verification policy (script it)
+│   └── report-run         # shared: end-of-cycle report generation
+├── scripts/                  # deterministic helpers: run_init / log / state / cli / verify / report / install / lint_skills
+├── workflows/startcycle.md   # compatibility stub (real definition: skills/startcycle)
 ├── quota.example.yml         # routing mode template
 └── quota.local.yml           # (optional) your own plan limits. gitignore this
 
@@ -71,6 +73,18 @@ One `/startcycle` invocation is one **Run** (`RUN_ID = YYYYMMDD-HHMMSS-<slug>`).
 | Raw Codex / Claude Code output (the reasoning behind a decision) | `docs/runs/<RUN_ID>/raw/` |
 | The spec as approved / the spec as it stands now | `docs/specs/<RUN_ID>.md` / `docs/spec.md` |
 
+## ✅ Quality gates and token optimisation
+
+- **Acceptance criteria**: every spec carries Given/When/Then ACs with a verification method; you approve them at the gate.
+- **Mechanical definition of done**: `scripts/verify.sh` runs lint / types / tests / E2E (steps in `docs/verify.json`, bootstrap with `verify.sh --detect`) with no model inference.
+- **Bounded fix loop**: @engineer feeds only the tail of failing logs back, max 3 rounds, then escalates to Opus analysis or asks you.
+- **Independent tests**: tests for each AC are generated in a separate call that never sees the implementation.
+- **Brief files**: CLIs get `docs/runs/<RUN_ID>/briefs/NN.md` (ACs, files to touch, done criteria) instead of pasted snippets, and read what they need themselves.
+- **`docs/ARCHITECTURE.md`**: a ≤100-line repo map every CLI reads first, replacing repeated exploration.
+- **Scripts over prose**: run ID, journal, CLI invocation (`cli.sh`: flags, raw output, cost, usage-limit detection → exit 75) and reporting (`report.sh`) are deterministic shell. Only summaries are read back; raw output stays in `raw/`.
+- **Tighter permissions by default**: Codex `workspace-write`; Claude `acceptEdits` with an explicit tool allow-list and `--max-turns`. Widen only deliberately (`CODEX_SANDBOX`, `CLAUDE_TOOLS`).
+- **Resume**: `/startcycle resume` reads only the ≤20-line `STATE.md`.
+
 ## ⚖️ Spreading the load across providers
 
 Left to its own judgement, the orchestrator does nearly everything itself and burns through the Gemini quota while the other subscriptions sit idle. So **delegation is the default**, not an option.
@@ -79,7 +93,7 @@ Left to its own judgement, the orchestrator does nearly everything itself and bu
 
 ### Routing rules
 
-If the orchestrator handles work that `agents.md` assigns to a CLI — code generation over 20 lines, algorithm design, review, audit, architecture — **it must record why in the journal**. Doing so silently is a violation of the convention. Antigravity itself is limited to orchestration: file I/O, git, builds, tests and talking to you. Claude Code uses **Sonnet** as its default model, and switches to **Opus** for complex architecture designs and in-depth bug/issue investigations.
+If the orchestrator handles work that `agents.md` assigns to a CLI — multi-file implementation, algorithm design, review, audit, architecture — **it must record why in the journal**. Doing so silently is a violation of the convention. Antigravity itself is limited to orchestration: file I/O, git, builds, tests and talking to you. Claude Code uses **Sonnet** as its default model, and switches to **Opus** for complex architecture designs and in-depth bug/issue investigations.
 
 ### Modes
 
@@ -112,11 +126,23 @@ So the rule is: **capture it once as a spec, then run it without inference.**
 2. Run it with `npx playwright test` — no model inference, so no tokens
 3. Send **only the failing cases**, with their logs and screenshots, to Claude Code for diagnosis
 
-Interactive browser use is allowed in exactly two cases: a single smoke check when no spec exists yet, and visual judgements that can't be automated. Either way the step count goes in the journal and is billed to "handled in-house" in the ledger. Anything you need to check twice gets turned into a spec first. See `skills/verify_ui.md`.
+Interactive browser use is allowed in exactly two cases: a single smoke check when no spec exists yet, and visual judgements that can't be automated. Either way the step count goes in the journal and is billed to "handled in-house" in the ledger. Anything you need to check twice gets turned into a spec first. See `skills/verify-ui`.
 
 ### Usage accounting
 
 Claude Code CLI reports `total_cost_usd` per call with `--output-format json`, so its spend is measured directly. Codex is counted by invocation, Gemini by "tasks handled in-house". Each run appends a row to `docs/runs/usage.md` recording the **delegation rate** (CLI calls ÷ total tasks). If that stays below 50% in `balanced` mode, the report raises a warning.
+
+## 🔌 Cross-tool compatibility
+
+Skills follow the Agent Skills standard (`<name>/SKILL.md` with `name` and `description` frontmatter). With this repo mounted as `.agents/` in the parent project:
+
+| Tool | Skill discovery | Here |
+|:---|:---|:---|
+| **Antigravity** | `<workspace>/.agents/skills/<name>/` | found natively |
+| **Codex** | `.agents/skills` from the CWD up to the repo root (symlinks OK) | found natively |
+| **Claude Code** | `.claude/skills/<name>/` | `install.sh` symlinks them |
+
+Only each skill's `description` is always loaded; bodies load on demand. `/startcycle` is itself a skill (`workflows/startcycle.md` is a compatibility stub). `install.sh` adds a managed block to the parent `AGENTS.md`; if the parent has a `CLAUDE.md`, add `@AGENTS.md` to it, since Claude Code otherwise ignores `AGENTS.md`. Enforcement relies on scripts (`verify.sh`, the `APPROVED` file), not tool-specific hooks. Run `scripts/lint_skills.sh` after editing skills.
 
 ## 🗂 Keeping spec history
 
@@ -140,16 +166,20 @@ Because each gate commits separately, history separates whose work a change came
 | QA fixes done (@qa) | `fix(qa): <summary> (<RUN_ID>)` |
 | Report generated | `docs(run): add report for <RUN_ID>` |
 
+## 📈 Evaluating the harness (evals)
+
+`evals/` holds two small tasks (greenfield and refactor) with hidden acceptance checks. `run_eval.sh` runs them, `results.tsv` records pass rate, fix-loop rounds, CLI calls, USD and tokens, and `compare.sh` averages per harness version. See `evals/README.md`.
+
 ## 📦 Using it in another project (Git submodule)
 
 ```bash
 git submodule add https://github.com/naimasa/antigravity-agents.git .agents
-mkdir -p docs/specs docs/runs src
 git rev-parse --git-dir || git init   # required for history preservation
-git submodule update --remote         # pull the latest agent definitions
+.agents/scripts/install.sh            # Claude Code links, AGENTS.md block, docs/, .gitignore (idempotent)
+.agents/scripts/verify.sh --detect    # bootstrap docs/verify.json (review it)
+git submodule update --remote         # update definitions (re-run install.sh afterwards)
 
 cp .agents/quota.example.yml .agents/quota.local.yml   # optional: routing mode
-echo ".agents/quota.local.yml" >> .gitignore
 ```
 
 ## 🙏 Credits
