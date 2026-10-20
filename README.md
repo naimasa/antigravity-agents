@@ -177,17 +177,48 @@ skill を **Agent Skills 標準（`<name>/SKILL.md` ＋ `name`/`description` の
 
 ルーティングや skill を変えたときに効果を数値で比べるため、小さな評価課題を用意しています（`evals/`）。新規作成と既存コードのリファクタ各 1 件で、エージェントから見えない受入判定を持ちます。`run_eval.sh` で実行し、成功率・修正ループ回数・CLI 呼出数・USD・tokens を `results.tsv` に記録、`compare.sh` で版ごとの平均を比較します。詳細は `evals/README.md`。
 
-## 📦 他プロジェクトへの導入（Git Submodule）
+## 📦 他プロジェクトへの導入
+
+`install.sh` は Claude Code 用リンク（`.claude/skills/`）・`AGENTS.md` の管理ブロック・`docs/`・`.gitignore` を整備します。これらが git の差分に出てよいかで、2 つのパターンを選びます。
+
+### パターン A: チーム共有（Git Submodule・生成物をコミットする）
+`.agents` を submodule として管理し、`install.sh` の生成物もコミットして、クローンした全員が同じ構成になります。
 
 ```bash
+git rev-parse --git-dir || git init                  # 履歴保全に必須
 git submodule add https://github.com/naimasa/antigravity-agents.git .agents
-git rev-parse --git-dir || git init   # 履歴保全に必須
-.agents/scripts/install.sh            # Claude Code 用リンク・AGENTS.md・docs/・.gitignore を整備（冪等）
-.agents/scripts/verify.sh --detect    # テスト/lint 実行手段を docs/verify.json に生成（要確認）
-git submodule update --remote         # 最新のエージェント定義へ更新（更新後に install.sh を再実行）
+.agents/scripts/install.sh                           # .claude/skills・AGENTS.md・.gitignore を整備（冪等）
+.agents/scripts/verify.sh --detect                   # docs/verify.json を生成（内容を確認）
+git add .gitmodules .agents .claude AGENTS.md .gitignore docs
+git commit -m "chore: add antigravity-agents harness"
 
-cp .agents/quota.example.yml .agents/quota.local.yml   # (任意) ルーティングモード設定
+# (任意) ルーティングモード設定。quota.local.yml は .gitignore 済み
+cp .agents/quota.example.yml .agents/quota.local.yml
+
+# 更新時
+git submodule update --remote && .agents/scripts/install.sh
 ```
+
+### パターン B: 個人利用（git の差分に出さない）
+`.agents` を単なる clone で置き、`install.sh --local` で生成物を `.git/info/exclude`（コミットされないローカル専用の除外設定）に登録します。`git status` には何も出ません。
+
+```bash
+git rev-parse --git-dir || git init
+git clone https://github.com/naimasa/antigravity-agents.git .agents
+.agents/scripts/install.sh --local                   # .agents/・.claude/skills・AGENTS.md を除外して整備（冪等）
+.agents/scripts/verify.sh --detect                   # docs/verify.json を生成（内容を確認）
+git status --short                                   # → .agents/ 等は表示されない
+
+# (任意) ルーティングモード設定
+cp .agents/quota.example.yml .agents/quota.local.yml
+
+# 更新時
+git -C .agents pull && .agents/scripts/install.sh --local
+```
+
+- 追跡済みの `AGENTS.md` が既にある場合、`--local` はそれを変更せず、追記すべきブロックを表示します（skill は `.agents/skills` から直接発見されるため、追記しなくても動作します）。
+- `docs/spec.md`・`docs/runs/` などの**開発成果物はプロジェクトの記録として通常どおり差分に出ます**（除外対象は導入物のみ）。
+- 後から共有に切り替える場合は `.git/info/exclude` の該当行を削除し、パターン A の手順を実施します。
 
 ## 🙏 謝辞
 
