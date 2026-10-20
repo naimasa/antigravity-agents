@@ -1,3 +1,7 @@
+---
+name: report-run
+description: /startcycle の Step 5 で使う。report.sh の実測集計から report.md と index.md を作る。
+---
 # Skill: Report Run（最終レポート）
 
 Step 5。集計は `scripts/report.sh` が実測から出す。LLM は文章部分のみ書く。
@@ -16,7 +20,7 @@ Step 5。集計は `scripts/report.sh` が実測から出す。LLM は文章部�
 ## 1. 各ペルソナの結果（Status / 主な成果 / 変更ファイル数 / CLI）
 ## 2. 仕様の変更点（As-Is → To-Be）と AC の充足状況（AC ごとに verify 結果へ対応付け。手動確認・未検証は明記）
 ## 3. 変更ファイル（report.sh の diff --stat）
-## 4. QA 結果（audit_code.md の検出表。未対応も含む）
+## 4. QA 結果（audit-code の検出表。未対応も含む）
 ## 5. CLI 委譲サマリ（report.sh の委譲率・USD・tokens。50% 未満や自前処理は理由を明記）
 ## 6. 稼働確認（起動コマンド / URL / verify 結果 / 対話ブラウザ操作ステップ数。未実施は「未検証」）
 ## 7. 残課題・次アクション

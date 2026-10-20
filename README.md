@@ -2,34 +2,36 @@
 
 *[English README](README.en.md)*
 
-> **本ファイルは人間向けのガイドです。エージェントは読み込む必要はありません**（動作定義は `agents.md` / `skills/` / `workflows/` が唯一の情報源）。
+> **本ファイルは人間向けのガイドです。エージェントは読み込む必要はありません**（動作定義は `agents.md` / `skills/` が唯一の情報源）。
 
 Antigravity IDE と各種 AI CLI（Codex / Claude Code）を適材適所で協調動作させる、自律型開発オーケストレーション設定です。
 **新規アプリケーションのゼロサム開発**から**既存システムのリファクタリング・機能追加**までシームレスに対応します。
 
-ペルソナ構成・`.agents/` のディレクトリ規約・`/startcycle` ワークフロー・承認ゲートは Google の Codelab をベースにしています（[謝辞](#-謝辞)）。本リポジトリはそこに、複数 CLI への委譲・Run 単位の成果集約・仕様書の履歴保全・消費量の記録を追加したものです。
+ペルソナ構成・`.agents/` のディレクトリ規約・`/startcycle`・承認ゲートは Google の Codelab をベースにしています（[謝辞](#-謝辞)）。本リポジトリはそこに、複数 CLI への委譲・Run 単位の成果集約・仕様書の履歴保全・消費量の記録を追加したものです。
 
 ## 📁 ディレクトリ構造
 
 ```
 .agents/                      # 本リポジトリ（エージェント設定）
 ├── agents.md                 # ペルソナ定義 & CLI使い分け（常時読み込み）
-├── skills/
-│   ├── write_specs.md        # @pm: 要件定義・承認ゲート・仕様の履歴保全
-│   ├── generate_code.md      # @engineer: 実装・差分改修（Codex 連携）
-│   ├── audit_code.md         # @qa: 監査・デグレード防止（Claude Code 連携）
-│   ├── deploy_app.md         # @devops: ローカル起動
-│   ├── deploy_production.md  # @devops: 本番/クラウドデプロイ
-│   ├── track_progress.md     # 共通: 作業結果の記録規約（唯一の情報源）
-│   ├── manage_quota.md       # 共通: CLI 消費量の記録とルーティング制御
-│   ├── verify_ui.md          # 共通: ブラウザ動作確認の方針（spec 化）
-│   └── report_run.md         # 共通: サイクル最終レポート生成
+├── skills/                   # Agent Skills 標準（<name>/SKILL.md ＋ frontmatter）
+│   ├── startcycle/           # /startcycle 本体（統括）
+│   ├── write-specs/          # @pm: 要件定義・AC・承認ゲート・仕様の履歴保全
+│   ├── generate-code/        # @engineer: 実装・修正ループ（Codex 連携）
+│   ├── audit-code/           # @qa: 監査・デグレード防止（Claude Code 連携）
+│   ├── deploy-app/  deploy-production/   # @devops
+│   ├── track-progress/       # 共通: 記録規約（唯一の情報源）
+│   ├── manage-quota/         # 共通: 消費量の記録・ルーティング・利用制限時の確認
+│   ├── verify-ui/            # 共通: ブラウザ動作確認の方針（spec 化）
+│   └── report-run/           # 共通: 最終レポート生成
 ├── scripts/                  # 定型作業の決定論的スクリプト（LLM 推論を使わない）
 │   ├── run_init.sh  log.sh  state.sh   # 採番・journal・再開用 STATE
 │   ├── cli.sh                          # Codex/Claude 呼出の唯一の入口（権限・生出力・コスト・制限検知）
 │   ├── verify.sh                       # lint/型/テスト/E2E の機械的な合否判定
-│   └── report.sh                       # 実測集計・usage 台帳追記
-├── workflows/startcycle.md   # スラッシュコマンド `/startcycle` 定義
+│   ├── report.sh                       # 実測集計・usage 台帳追記
+│   ├── install.sh                      # 初回導入（Claude Code 用リンク・AGENTS.md 追記）
+│   └── lint_skills.sh                  # 本リポジトリ自身の整合性チェック
+├── workflows/startcycle.md   # 旧 Antigravity workflow 用の互換スタブ（実体は skills/startcycle）
 ├── quota.example.yml         # ルーティングモード設定のテンプレート
 └── quota.local.yml           # (任意) 自分のプラン上限。gitignore 推奨
 
@@ -128,7 +130,7 @@ Web アプリの動作確認を対話的なブラウザ操作（スクリーン�
 2. `npx playwright test` で実行する（モデル推論を伴わないためトークンを消費しない）
 3. **失敗したケースだけ**、そのログとスクリーンショットを Claude Code に渡して原因分析させる
 
-対話的なブラウザ操作を使ってよいのは、spec が無い初回の疎通確認1回と、自動化困難な視覚判断のみです。使った場合は操作ステップ数を journal に記録し、消費台帳では「Gemini 自前処理」として計上します。同じ確認を2回以上行う場合は、必ず spec に落としてから実行します。詳細は `skills/verify_ui.md`。
+対話的なブラウザ操作を使ってよいのは、spec が無い初回の疎通確認1回と、自動化困難な視覚判断のみです。使った場合は操作ステップ数を journal に記録し、消費台帳では「Gemini 自前処理」として計上します。同じ確認を2回以上行う場合は、必ず spec に落としてから実行します。詳細は `skills/verify-ui`。
 
 ### 消費量の可視化
 `cli.sh` が `--output-format json` の `total_cost_usd` と tokens を Run ごとの `usage.tsv` に記録し、Codex は呼び出し回数、Gemini は「自前処理した件数」で計上します。`report.sh` が `docs/runs/usage.md` へ追記され、**委譲率**（CLI 呼出 ÷ 全処理）が記録されます。`balanced` で 50% を下回り続ける場合、レポートに警告が出ます。
@@ -155,20 +157,36 @@ git log --oneline --follow docs/spec.md   # 仕様書の変遷を追う
 | QA 修正完了 (@qa) | `fix(qa): <概要> (<RUN_ID>)` |
 | レポート生成 | `docs(run): add report for <RUN_ID>` |
 
+## 🔌 Antigravity / Codex / Claude Code 互換
+
+skill を **Agent Skills 標準（`<name>/SKILL.md` ＋ `name`/`description` の frontmatter）** に統一し、3 ツールが同じ実体を読みます。サブモジュールを親プロジェクトの `.agents/` に置くため、探索パスは次のとおりです（公式ドキュメントで確認済み）。
+
+| ツール | skill の探索場所 | 本リポジトリでの扱い |
+|:---|:---|:---|
+| **Antigravity** | `<workspace>/.agents/skills/<name>/` | そのまま発見される（追加作業なし） |
+| **Codex** | `<repo root>/.agents/skills`（カレントから root まで。symlink 可） | そのまま発見される（追加作業なし） |
+| **Claude Code** | `.claude/skills/<name>/` | `install.sh` がシンボリックリンクを作成 |
+
+- skill は `description` だけが常時ロードされ、本文は必要時のみ読まれる（段階的開示）ため、使わない skill のトークンはかかりません。
+- 常時ロード指示は親プロジェクトの `AGENTS.md`（`install.sh` が管理ブロックを追記）。Claude Code は `CLAUDE.md` があると `AGENTS.md` を読まないため、その場合は `CLAUDE.md` に `@AGENTS.md` を 1 行追加してください。
+- `/startcycle` は skill として定義しているため、3 ツールで同じ手順が走ります（呼び出し記法はツールごとに異なる場合があります）。CLI に委譲された Codex / Claude Code も、同じ `.agents/skills` を読めます。
+- ツール固有機能（hooks 等）には依存せず、強制力は `verify.sh` と `APPROVED` ファイルなどスクリプトで担保します。
+- 本リポジトリの変更後は `scripts/lint_skills.sh` で frontmatter・参照整合性を確認できます。
+
 ## 📦 他プロジェクトへの導入（Git Submodule）
 
 ```bash
 git submodule add https://github.com/naimasa/antigravity-agents.git .agents
-mkdir -p docs/specs docs/runs src
 git rev-parse --git-dir || git init   # 履歴保全に必須
-git submodule update --remote         # 最新のエージェント定義へ更新
+.agents/scripts/install.sh            # Claude Code 用リンク・AGENTS.md・docs/・.gitignore を整備（冪等）
+.agents/scripts/verify.sh --detect    # テスト/lint 実行手段を docs/verify.json に生成（要確認）
+git submodule update --remote         # 最新のエージェント定義へ更新（更新後に install.sh を再実行）
 
 cp .agents/quota.example.yml .agents/quota.local.yml   # (任意) ルーティングモード設定
-echo ".agents/quota.local.yml" >> .gitignore
 ```
 
 ## 🙏 謝辞
 
 本リポジトリは Google Codelabs の **[Build Autonomous Developer Pipelines using agents.md and skills.md in Antigravity](https://codelabs.developers.google.com/autonomous-ai-developer-pipelines-antigravity)** をベースにしています。
 
-4 ペルソナ構成（@pm / @engineer / @qa / @devops）、`.agents/` のディレクトリ規約、`/startcycle` ワークフロー、そしてユーザーの承認ゲートは、いずれも同 Codelab に由来します。本リポジトリはこれに対し、Codex CLI / Claude Code CLI への委譲、Run 単位の成果集約、仕様書の履歴保全、消費量の記録、および submodule として再利用可能な形へのパッケージングを追加しています。
+4 ペルソナ構成（@pm / @engineer / @qa / @devops）、`.agents/` のディレクトリ規約、`/startcycle`、そしてユーザーの承認ゲートは、いずれも同 Codelab に由来します。本リポジトリはこれに対し、Codex CLI / Claude Code CLI への委譲、Run 単位の成果集約、仕様書の履歴保全、消費量の記録、および submodule として再利用可能な形へのパッケージングを追加しています。

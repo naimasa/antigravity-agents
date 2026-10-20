@@ -1,3 +1,7 @@
+---
+name: write-specs
+description: /startcycle の Step 1（@pm）で使う。要望を受入基準(AC)付きの docs/spec.md と docs/ARCHITECTURE.md に落とし、ユーザー承認まで停止する。仕様書作成・改訂・承認ゲートが必要なときに読む。
+---
 # Skill: Write Specs（@pm）
 
 ユーザーの要望（新規開発・改善・リファクタリング）を技術仕様書に落とし込み、**明示的な承認を得るまで待機・反復**する。併せて仕様書の過去版を失わないことを保証する。
@@ -10,7 +14,7 @@
 - **承認時スナップショット**: 承認後 `mkdir -p docs/specs && cp docs/spec.md docs/specs/$RUN_ID.md` を実行し、`docs/spec.md` `docs/specs/$RUN_ID.md` `docs/runs/$RUN_ID` を `docs(spec): approve spec for <RUN_ID>` としてコミットする。
 - **Approval Gate**: 仕様書作成後は必ず停止し、承認（"Approved"）またはフィードバックを求める。チャットまたは `docs/spec.md` 内のコメントで修正指示が来たら改訂して再承認を求め、**往復のたびに上記の保全を実施する**（過程も履歴に残る）。
 - **既存システム**: 既存コードや外部移行元（WordPress等）があれば、As-Is のアーキテクチャ・依存関係・実データ（API/Sitemap等の抽出結果）を Antigravity が事前に収集して CLI へ渡し、To-Be との差分と破壊的変更の有無を明記する。
-- **記録**: `track_progress.md` のスクリプトで記録する。停止前に `log.sh pm Awaiting …`、承認後に `Done`。構造把握・設計は Claude Code へ委譲（`cli.sh claude-sonnet <brief> pm-<topic>`、複雑な設計は `claude-opus`）。利用制限（終了コード 75）は `manage_quota.md` に従う。
+- **記録**: `track-progress` のスクリプトで記録する。停止前に `log.sh pm Awaiting …`、承認後に `Done`。構造把握・設計は Claude Code へ委譲（`cli.sh claude-sonnet <brief> pm-<topic>`、複雑な設計は `claude-opus`）。利用制限（終了コード 75）は `manage-quota` に従う。
 - **受入基準（必須）**: 機能要件ごとに検証可能な AC を **Given/When/Then** で `AC-1…AC-n` と採番し、各 AC に検証手段（テスト名またはコマンド）を対応付ける。検証手段が無い AC は「手動確認」と明示し、`verify.sh` の対象外であることをユーザーに示す。承認ゲートでは AC の妥当性も確認してもらう。
 - **ARCHITECTURE.md**: `docs/ARCHITECTURE.md`（ディレクトリ構成・主要モジュールの責務・実行/テストコマンド・規約。**100 行以内**）を新規作成または差分更新する。全 CLI が最初に読む地図であり、再探索のトークンを省く。
 - **verify.json**: 承認前に `.agents/scripts/verify.sh --detect` で `docs/verify.json` の雛形を作り、内容を確認する。steps が空なら「テスト整備」を spec の作業項目に含める。

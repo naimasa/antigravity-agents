@@ -1,3 +1,7 @@
+---
+name: deploy-production
+description: /startcycle の Step 4（@devops）で本番/クラウドへデプロイする際に使う。docs/spec.md の Deployment 方針に従う。
+---
 # Skill: Deploy Production / Cloud（@devops）
 
 `docs/spec.md` の「Deployment & Hosting Strategy」で承認された方針に従い、`src/` を本番環境へデプロイする。

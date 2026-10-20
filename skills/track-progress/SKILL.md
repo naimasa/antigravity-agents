@@ -1,3 +1,7 @@
+---
+name: track-progress
+description: /startcycle の全ステップで一度読む記録規約。run_init.sh・log.sh・state.sh・cli.sh の使い方と docs/ のレイアウトを定義する。
+---
 # Skill: Track Progress（記録規約）
 
 「誰が・何を・どの CLI で・どうなったか」を後から追える状態にする。**手書きせず `scripts/` を使う。Run 中に一度読めば足りる。**

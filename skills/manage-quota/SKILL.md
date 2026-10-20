@@ -1,3 +1,7 @@
+---
+name: manage-quota
+description: Step 0 の preflight と、cli.sh が終了コード75（利用制限）を返したときに使う。消費量の記録、ルーティングモード、制限到達時のユーザー確認手順。
+---
 # Skill: Manage Quota（消費量記録とルーティング制御）
 
 残量の自動照会は不可（Gemini は UI のみ、Claude Code / Codex に usage サブコマンドなし）。「実測の積み上げ」＋「ユーザー宣言の上限」＋「モード切替」で運用する。
