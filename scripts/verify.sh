@@ -14,6 +14,7 @@ if [ "${1:-}" = "--detect" ]; then
       done
     fi
     [ -f "$d/pyproject.toml" -o -f "$d/pytest.ini" -o -d "$d/tests" ] && command -v pytest >/dev/null && add pytest "(cd $d && pytest -q)"
+    if [ -d "$d/tests" ] && ! command -v pytest >/dev/null; then add unittest "(cd $d && python3 -m unittest discover -s tests)"; fi
     [ -f "$d/go.mod" ] && add go-test "(cd $d && go test ./...)"
   done
   mkdir -p docs; jq -n --argjson s "$steps" '{steps:$s}' > "$cfg"
@@ -30,4 +31,5 @@ for i in $(seq 0 $((n-1))); do
   else summary+="$name:FAIL "; fail=1; echo "--- FAIL: $name ($cmd) 末尾40行 ---"; tail -n 40 "$vd/$name.log"; break; fi
 done
 echo "$summary" | tee "$vd/latest.txt"
+printf '%s\t%s\n' "$(date +%s)" "$([ $fail -eq 0 ] && echo PASS || echo FAIL)" >> "$vd/history.tsv"
 exit $fail

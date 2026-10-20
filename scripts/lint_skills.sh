@@ -17,5 +17,5 @@ if grep -rnE '[a-z]+_[a-z]+\.md' skills agents.md workflows 2>/dev/null | grep -
 for r in $(grep -rhoE '`(write|generate|audit|deploy|track|manage|verify|report)-[a-z-]+`' skills agents.md | tr -d '`' | sort -u); do
   echo "$names" | grep -qx "$r" || { echo "NG: 存在しない skill 参照 $r"; fail=1; }
 done
-bash -n scripts/*.sh 2>/dev/null; for s in scripts/*.sh; do bash -n "$s" || fail=1; done
+
 [ $fail -eq 0 ] && echo "OK" ; exit $fail

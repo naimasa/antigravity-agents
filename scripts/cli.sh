@@ -16,7 +16,9 @@ case "$kind" in
     # 既定は workspace-write。ネットワーク/デプロイが必要な場合のみ CODEX_SANDBOX=danger-full-access を明示
     echo "$prompt" | codex exec -o "$out-result.md" --skip-git-repo-check --ephemeral \
       -s "${CODEX_SANDBOX:-workspace-write}" >"$out-log.txt" 2>&1 || rc=$?
-    echo -e "codex\t-\t$out-result.md\t0\t0\t0" >> "docs/runs/$r/usage.tsv";;
+    # Codex の token 数は最終ログの "tokens used" 行からの best-effort 抽出（取れなければ 0）
+    ctok=$(grep -iA1 'tokens used' "$out-log.txt" 2>/dev/null | grep -oE '[0-9][0-9,]*' | tail -1 | tr -d ',' || true)
+    echo -e "codex\t-\t$out-result.md\t0\t${ctok:-0}\t0" >> "docs/runs/$r/usage.tsv";;
   claude-sonnet|claude-opus)
     m=${kind#claude-}; budget=2.00; [ "$m" = opus ] && budget=5.00
     # bypassPermissions は使わず、許可ツールを明示。CLAUDE_TOOLS で上書き可

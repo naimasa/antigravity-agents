@@ -166,6 +166,10 @@ Because each gate commits separately, history separates whose work a change came
 | QA fixes done (@qa) | `fix(qa): <summary> (<RUN_ID>)` |
 | Report generated | `docs(run): add report for <RUN_ID>` |
 
+## 📈 Evaluating the harness (evals)
+
+`evals/` holds two small tasks (greenfield and refactor) with hidden acceptance checks. `run_eval.sh` runs them, `results.tsv` records pass rate, fix-loop rounds, CLI calls, USD and tokens, and `compare.sh` averages per harness version. See `evals/README.md`.
+
 ## 📦 Using it in another project (Git submodule)
 
 ```bash

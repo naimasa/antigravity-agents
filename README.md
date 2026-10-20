@@ -173,6 +173,10 @@ skill を **Agent Skills 標準（`<name>/SKILL.md` ＋ `name`/`description` の
 - ツール固有機能（hooks 等）には依存せず、強制力は `verify.sh` と `APPROVED` ファイルなどスクリプトで担保します。
 - 本リポジトリの変更後は `scripts/lint_skills.sh` で frontmatter・参照整合性を確認できます。
 
+## 📈 ハーネスの評価（evals）
+
+ルーティングや skill を変えたときに効果を数値で比べるため、小さな評価課題を用意しています（`evals/`）。新規作成と既存コードのリファクタ各 1 件で、エージェントから見えない受入判定を持ちます。`run_eval.sh` で実行し、成功率・修正ループ回数・CLI 呼出数・USD・tokens を `results.tsv` に記録、`compare.sh` で版ごとの平均を比較します。詳細は `evals/README.md`。
+
 ## 📦 他プロジェクトへの導入（Git Submodule）
 
 ```bash
