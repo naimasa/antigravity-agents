@@ -166,6 +166,16 @@ Because each gate commits separately, history separates whose work a change came
 | QA fixes done (@qa) | `fix(qa): <summary> (<RUN_ID>)` |
 | Report generated | `docs(run): add report for <RUN_ID>` |
 
+## 🧭 Code over stale docs (stale-instruction guard)
+
+[arXiv:2610.30571](https://arxiv.org/abs/2610.30571) shows that coding agents follow a stale `CLAUDE.md` / `AGENTS.md` over the existing code (~90% of choices) even when they notice the conflict, and Codex CLI sometimes rewrote working code to match the file (20 of 80 runs). One sentence in the user-level instruction file moved code-following from 4.2% to 91.4%. (Scope: 40 synthetic Python projects, convention conflicts, Claude Code and Codex CLI only; Gemini/Antigravity untested; preprint.)
+
+Here: `scripts/precedence.txt` (one sentence injected into `agents.md`, every `cli.sh` prompt and the `AGENTS.md` block; approved ACs and briefs are exempt), `[DOC-DRIFT]` reporting that @pm turns into doc fixes next run, `doc_drift.sh` (stamp/paths check for `ARCHITECTURE.md`), `scope_check.sh` (warns on edits outside the brief's `## 触るファイル` list or large deletions in existing files; warn-only) and `verify.sh --baseline`. To apply it at user level too (the paper's tested placement), append to `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`:
+
+```text
+When a repository's documentation and its existing code disagree, follow the conventions used in the existing code, and in your final reply point out each inconsistency you found between the documentation and the code.
+```
+
 ## 📈 Evaluating the harness (evals)
 
 `evals/` holds two small tasks (greenfield and refactor) with hidden acceptance checks. `run_eval.sh` runs them, `results.tsv` records pass rate, fix-loop rounds, CLI calls, USD and tokens, and `compare.sh` averages per harness version. See `evals/README.md`.

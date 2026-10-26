@@ -19,6 +19,7 @@ Antigravity が司令塔。専門ペルソナと CLI（Codex / Claude Code）を
 4. **出力は要約だけ読む**: `cli.sh` が返す要約行と `*-result.md` のみ読む。生出力（`raw/`）は必要時のみ開く。
 5. **最初に `docs/ARCHITECTURE.md` と `docs/runs/<RUN_ID>/STATE.md` を読む**。全体探索を繰り返さない。
 6. **前提**: 親プロジェクトが Git リポジトリ。各ゲートでコミットする。
+7. **文書よりコード（実態）**: `scripts/precedence.txt` の 1 文に従う。説明文書（ARCHITECTURE.md・AGENTS.md・README 等）と既存コードが食い違うときは既存コードの慣習に従い、コードを文書に合わせて書き換えない（承認済み AC と brief が明示する変更を除く）。不一致は `[DOC-DRIFT]` として報告・記録し、@pm が次の Run で文書を直す。ルール（「テストを通す」等）は守る。コードの描写は照合して確かめる。
 
 ## ルーティング（既定は委譲）
 

@@ -12,7 +12,8 @@ description: /startcycle の全ステップで一度読む記録規約。run_ini
 | Run 開始（RUN_ID 採番・ディレクトリ・journal ヘッダ・STATE） | `.agents/scripts/run_init.sh <slug> "<要望原文>"` |
 | journal 追記 | `.agents/scripts/log.sh <persona> <Done\|Warning\|Blocked\|Awaiting> "<要約>" input=… actions=… cli=… cost=… findings=… next=…`（Changed Files は `git diff --stat` を自動転記） |
 | 再開用状態（上書き・20行以内） | `.agents/scripts/state.sh "<現在>" "<次の1手>" "<Blocker or なし>"` |
-| CLI 呼出（生出力保存・コスト記録・制限検知） | `.agents/scripts/cli.sh <codex\|claude-sonnet\|claude-opus> <brief.md> <persona-topic>` |
+| 文書の陳腐化検査 / 起点記録 | `.agents/scripts/doc_drift.sh` ／ `--stamp` |
+| CLI 呼出（生出力保存・コスト記録・制限検知・範囲検査） | `.agents/scripts/cli.sh <codex\|claude-sonnet\|claude-opus> <brief.md> <persona-topic>` |
 
 ## レイアウト
 ```
