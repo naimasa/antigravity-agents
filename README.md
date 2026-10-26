@@ -173,6 +173,27 @@ skill を **Agent Skills 標準（`<name>/SKILL.md` ＋ `name`/`description` の
 - ツール固有機能（hooks 等）には依存せず、強制力は `verify.sh` と `APPROVED` ファイルなどスクリプトで担保します。
 - 本リポジトリの変更後は `scripts/lint_skills.sh` で frontmatter・参照整合性を確認できます。
 
+## 🧭 古い文書よりコードを優先する（stale instruction 対策）
+
+論文 [arXiv:2610.30571](https://arxiv.org/abs/2610.30571) は、`CLAUDE.md` / `AGENTS.md` が既存コードと食い違うとき、コーディングエージェントが**食い違いに気づいても古い文書に従う**（選択の約 90%）ことを示しました。Codex CLI は 80 回中 20 回、既存コードを文書に合わせて書き換え、その多くで既存テストが壊れています。ユーザーレベルの指示ファイルに「文書とコードが食い違うときは既存コードに従い、不一致を報告する」という 1 文を足すと、コードに従う割合は 4.2% から 91.4% に上がりました。
+
+> ※ 対象は Python の合成プロジェクト 40 件・慣習の食い違いのみ・Claude Code と Codex CLI の 2 つで、Antigravity（Gemini）は未検証のプレプリントです。
+
+本ハーネスの対応:
+
+| 対応 | 内容 |
+|:---|:---|
+| 優先順位の 1 文 | `scripts/precedence.txt`。`agents.md`・`cli.sh` が渡す全プロンプト・`install.sh` が書く `AGENTS.md` ブロックに入る。承認済み AC と brief が明示する変更は例外 |
+| 不一致の報告 | CLI は最終報告に `[DOC-DRIFT]` を列挙 → journal → 次の Run で @pm が文書を修正 |
+| 陳腐化検査 | `scripts/doc_drift.sh`（`ARCHITECTURE.md` の `as of` と参照パスの実在を検査。Step 0 で実行。警告のみ） |
+| 書き換えの検出 | `scripts/scope_check.sh`（`cli.sh` が自動実行。brief の「触るファイル」外の変更と既存ファイルの大幅削除を警告。警告のみ）、`verify.sh --baseline` で着手前のテスト状態を記録 |
+
+**ユーザーレベルにも入れる場合**（論文が検証した配置。プロジェクトを問わず効く）は、次を `~/.claude/CLAUDE.md` と `~/.codex/AGENTS.md` に追記してください。
+
+```text
+When a repository's documentation and its existing code disagree, follow the conventions used in the existing code, and in your final reply point out each inconsistency you found between the documentation and the code.
+```
+
 ## 📈 ハーネスの評価（evals）
 
 ルーティングや skill を変えたときに効果を数値で比べるため、小さな評価課題を用意しています（`evals/`）。新規作成と既存コードのリファクタ各 1 件で、エージェントから見えない受入判定を持ちます。`run_eval.sh` で実行し、成功率・修正ループ回数・CLI 呼出数・USD・tokens を `results.tsv` に記録、`compare.sh` で版ごとの平均を比較します。詳細は `evals/README.md`。

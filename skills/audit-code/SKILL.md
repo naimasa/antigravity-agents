@@ -12,6 +12,7 @@ description: /startcycle の Step 3（@qa）で使う。verify.sh で拾えな�
 - **デグレード防止を最優先**: 既存要件・公開インターフェースが保たれているか。
 - **委譲（既定）**: 監査は Claude Code へ。`cli.sh claude-sonnet <brief> qa-<topic>`（複雑な不具合調査・深層原因は `claude-opus`）。`local-only` を除き自前監査で済ませない。
 - **brief**: 起点コミット、変更ファイルの一覧、見るべき AC、**出力形式**（下表の JSON 配列を `docs/runs/$RUN_ID/raw/` 配下に保存する、または最終メッセージを表形式にする）を指定。diff 全文は貼らず、`git diff` を自分で見るよう指示する。
+- **書き換えの確認**: `docs/runs/$RUN_ID/scope-warnings.md` と `verify/baseline.txt` を brief に含め、「文書に合わせて既存コードを書き換えていないか」「着手前から通っていたテストを壊していないか」を必ず見させる。`[DOC-DRIFT]` は検出表に「文書の誤り」として載せる。
 - **直接修正**: 必要な修正は `src/` に直接反映し、**修正後に `verify.sh` を再実行して通過を確認**する。
 - **利用制限**: 終了コード 75 は停止し `manage-quota` に従う。
 

@@ -25,6 +25,7 @@ block="$begin
 ## Autonomous developer pipeline
 開発要望は \`/startcycle <要望>\`（skill: \`.agents/skills/startcycle\`）で進める。ペルソナ・ルーティング・原則は \`.agents/agents.md\`。
 完了の定義は \`.agents/scripts/verify.sh\` の通過。記録・CLI 呼出は \`.agents/scripts/\` を使う。
+$(cat "$here/scripts/precedence.txt")
 $end"
 exclude="$(git rev-parse --git-path info/exclude)"; mkdir -p "$(dirname "$exclude")"; touch "$exclude"
 add_exclude() { grep -qxF "$1" "$exclude" || echo "$1" >> "$exclude"; }

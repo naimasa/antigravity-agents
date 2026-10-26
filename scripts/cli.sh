@@ -8,8 +8,11 @@ kind="${1:?kind}"; brief="${2:?brief}"; topic="${3:?topic}"
 r="$(current_run)"; raw="docs/runs/$r/raw"; mkdir -p "$raw"
 n=$(printf '%02d' $(( $(ls "$raw" 2>/dev/null | grep -c -- '-result\.md$') + 1 )))
 out="$raw/$n-$kind-$topic"
+precedence="$(cat "$(dirname "$0")/precedence.txt")"
 prompt="次のファイルが今回のタスク指示書です。読み、その指示と完了条件に従ってください: $brief
-作業後、最終メッセージには (1)変更したファイル (2)verify結果 (3)未解決事項 のみを簡潔に書くこと。"
+$precedence
+作業後、最終メッセージには (1)変更したファイル (2)verify結果 (3)未解決事項 (4)[DOC-DRIFT] 不一致（無ければ「なし」）のみを簡潔に書くこと。"
+snapdir="$(mktemp)"; "$(dirname "$0")/scope_check.sh" snapshot "$snapdir"
 limit_re='rate.?limit|429|quota|usage limit|insufficient|credit|overloaded'
 case "$kind" in
   codex)
@@ -37,3 +40,4 @@ if [ "${rc:-0}" -ne 0 ] && grep -qiE "$limit_re" "$out-log.txt" "$out-result.md"
 fi
 [ "${rc:-0}" -eq 0 ] || { echo "FAILED rc=$rc: tail of $out-log.txt"; tail -n 15 "$out-log.txt"; exit "$rc"; }
 echo "RESULT: $out-result.md"; head -n 5 "$out-result.md"
+"$(dirname "$0")/scope_check.sh" check "$brief" "$snapdir" | tee -a "docs/runs/$r/scope-warnings.md"; rm -f "$snapdir"

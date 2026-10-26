@@ -17,6 +17,7 @@ description: /startcycle の Step 1（@pm）で使う。要望を受入基準(AC
 - **記録**: `track-progress` のスクリプトで記録する。停止前に `log.sh pm Awaiting …`、承認後に `Done`。構造把握・設計は Claude Code へ委譲（`cli.sh claude-sonnet <brief> pm-<topic>`、複雑な設計は `claude-opus`）。利用制限（終了コード 75）は `manage-quota` に従う。
 - **受入基準（必須）**: 機能要件ごとに検証可能な AC を **Given/When/Then** で `AC-1…AC-n` と採番し、各 AC に検証手段（テスト名またはコマンド）を対応付ける。検証手段が無い AC は「手動確認」と明示し、`verify.sh` の対象外であることをユーザーに示す。承認ゲートでは AC の妥当性も確認してもらう。
 - **ARCHITECTURE.md**: `docs/ARCHITECTURE.md`（ディレクトリ構成・主要モジュールの責務・実行/テストコマンド・規約。**100 行以内**）を新規作成または差分更新する。全 CLI が最初に読む地図であり、再探索のトークンを省く。
+- **陳腐化の是正**: Step 0 の `doc_drift.sh` の警告と、過去 Run の `[DOC-DRIFT]` 報告を読み、実コードに合わせて `ARCHITECTURE.md`（必要なら spec・README・AGENTS.md）を直す。更新後は `.agents/scripts/doc_drift.sh --stamp` で `as of` を更新する。文書をコードに合わせるのであって、逆ではない。
 - **verify.json**: 承認前に `.agents/scripts/verify.sh --detect` で `docs/verify.json` の雛形を作り、内容を確認する。steps が空なら「テスト整備」を spec の作業項目に含める。
 
 ## Instructions

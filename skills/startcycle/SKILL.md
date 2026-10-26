@@ -11,7 +11,7 @@ description: 新しい開発要望（新規アプリ・機能追加・リファ�
 
 | Step | 担当 | スキル | 完了条件 / コミット |
 |:-:|:---|:---|:---|
-| 0 | — | `track-progress` `manage-quota` | モード決定 → `scripts/run_init.sh <slug> "<要望>"`（未初期化の Git なら停止し `git init` を促す）→ 未コミット変更があれば `chore: baseline before <RUN_ID>` |
+| 0 | — | `track-progress` `manage-quota` | モード決定 → `scripts/run_init.sh <slug> "<要望>"` → `scripts/doc_drift.sh`（文書の陳腐化検査。警告は @pm に申し送る）（未初期化の Git なら停止し `git init` を促す）→ 未コミット変更があれば `chore: baseline before <RUN_ID>` |
 | 1 | @pm | `write-specs` | `docs/spec.md`（受入基準 AC 付き）＋`docs/ARCHITECTURE.md` → **停止して承認待ち**。承認後 `docs(spec): approve spec for <RUN_ID>` |
 | 2 | @engineer | `generate-code` | 実装＋`verify.sh` 通過（最大3回の修正ループ）→ `feat: <概要> (<RUN_ID>)` |
 | 3 | @qa | `audit-code` | 機械検査外の監査・修正、`verify.sh` 再通過 → `fix(qa): <概要> (<RUN_ID>)` |

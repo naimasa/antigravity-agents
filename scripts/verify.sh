@@ -2,6 +2,7 @@
 # 機械的な合否判定（lint/型/テスト/E2E）。LLM 推論を使わない。
 # 使い方: verify.sh            … docs/verify.json の steps を順に実行。全通過で exit 0
 #         verify.sh --detect   … スタックを検出して docs/verify.json の雛形を生成（要レビュー）
+#         verify.sh --baseline … 実装着手前に実行し結果を verify/baseline.txt に記録（常に exit 0。既存テストの破壊を見分けるため）
 # 失敗時は失敗ステップ末尾のログだけを標準出力に出す（修正ループにはこれだけ渡す）。
 . "$(dirname "$0")/_common.sh"
 cfg=docs/verify.json
@@ -20,6 +21,7 @@ if [ "${1:-}" = "--detect" ]; then
   mkdir -p docs; jq -n --argjson s "$steps" '{steps:$s}' > "$cfg"
   echo "生成: $cfg（内容を確認・調整すること。steps が空なら検証手段が無い=テスト整備が先）"; cat "$cfg"; exit 0
 fi
+baseline=0; [ "${1:-}" = "--baseline" ] && baseline=1
 [ -f "$cfg" ] || { echo "docs/verify.json 無し。verify.sh --detect を実行" >&2; exit 2; }
 r="$(current_run)"; vd="docs/runs/$r/verify"; mkdir -p "$vd"
 n=$(jq '.steps|length' "$cfg")
@@ -32,4 +34,5 @@ for i in $(seq 0 $((n-1))); do
 done
 echo "$summary" | tee "$vd/latest.txt"
 printf '%s\t%s\n' "$(date +%s)" "$([ $fail -eq 0 ] && echo PASS || echo FAIL)" >> "$vd/history.tsv"
+if [ $baseline -eq 1 ]; then echo "baseline: $summary" > "$vd/baseline.txt"; echo "(baseline 記録: 着手前の状態)"; exit 0; fi
 exit $fail
